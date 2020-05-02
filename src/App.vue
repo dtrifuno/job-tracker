@@ -1,28 +1,55 @@
 <template>
   <div id="app">
-    <img alt="Vue logo" src="./assets/logo.png">
-    <HelloWorld msg="Welcome to Your Vue.js App"/>
+    <!--- Modals -->
+    <AddEditAddressModal />
+    <AddEditEducationModal />
+    <AddJobModal />
+    <AddEditPersonalProjectModal />
+    <AddEditSkillModal />
+    <AddEditWorkExperienceModal />
+    <DeleteModal />
+
+    <Header />
+    <router-view />
+    <Footer />
   </div>
 </template>
 
 <script>
-import HelloWorld from './components/HelloWorld.vue'
+import Header from "./components/layout/Header";
+import Footer from "./components/layout/Footer";
+
+import AddJobModal from "./modals/AddJobModal";
+import AddEditAddressModal from "./modals/AddEditAddressModal";
+import AddEditEducationModal from "./modals/AddEditEducationModal";
+import AddEditPersonalProjectModal from "./modals/AddEditPersonalProjectModal";
+import AddEditSkillModal from "./modals/AddEditSkillModal";
+import AddEditWorkExperienceModal from "./modals/AddEditWorkExperienceModal";
+import DeleteModal from "./modals/DeleteModal";
 
 export default {
-  name: 'App',
+  name: "App",
   components: {
-    HelloWorld
+    Header,
+    Footer,
+    AddJobModal,
+    AddEditAddressModal,
+    AddEditEducationModal,
+    AddEditPersonalProjectModal,
+    AddEditSkillModal,
+    AddEditWorkExperienceModal,
+    DeleteModal
   }
-}
+};
 </script>
 
 <style>
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
+html {
+  position: relative;
+  min-height: 100%;
+}
+
+body {
+  margin-bottom: 80px;
 }
 </style>
