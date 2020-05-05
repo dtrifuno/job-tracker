@@ -3,6 +3,7 @@ import re
 import string
 
 from sqlalchemy.orm import validates
+import validators
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from . import db
@@ -13,7 +14,7 @@ class User(db.Model):
     username = db.Column(db.String(100), unique=True, nullable=False)
     password_hash = db.Column(db.String(200))
     created_on = db.Column(db.DateTime, default=datetime.datetime.utcnow)
-    last_login = db.Column(db.DateTime)
+    last_login = db.Column(db.DateTime, default=datetime.datetime.utcnow)
 
     @validates('username')
     def validate_username(self, key, value):
@@ -42,11 +43,10 @@ class User(db.Model):
         return check_password_hash(self.password_hash, password)
 
     def __repr__(self):
-        return f'<User {self.email}>'
+        return f'<User {self.username}>'
 
 
 class Profile(db.Model):
-    # TODO: add user
     id = db.Column(db.Integer, primary_key=True)
     first_name = db.Column(db.String(50))
     last_name = db.Column(db.String(50))
@@ -56,13 +56,41 @@ class Profile(db.Model):
     github_url = db.Column(db.String(50))
     linkedin_url = db.Column(db.String(50))
 
-    # TODO: Link these to User instead
-    #addresses = db.relationship('Address', backref="profile", lazy=True)
-    # education = db.relationship('Education', backref="profile", lazy=True)
-    # skills = db.relationship('Skill', backref="profile", lazy=True)
-    # work_history = db.relationship('WorkHistory', backref="profile", lazy=True)
-    # personal_projects = db.relationship(
-    #    'PersonalProject', backref = "profile", lazy = True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    user = db.relationship('User', backref=db.backref(
+        "profile", uselist=False, lazy=True))
+
+    @validates('email')
+    def validate_email(self, key, value):
+        if value.strip() == '':
+            return ''
+        elif validators.email(value):
+            raise ValueError(f"{value} is not a valid email address.")
+        return value
+
+    @validates('website_url')
+    def validate_website_url(self, key, value):
+        if value.strip() == '':
+            return ''
+        elif validators.url(value):
+            raise ValueError(f"{value} is not a valid URL.")
+        return value
+
+    @validates('github_url')
+    def validate_github_url(self, key, value):
+        if value.strip() == '':
+            return ''
+        elif not re.match(r"https?://(www.)?github.com/[a-zA-Z0-9\-]{0, 39}", value):
+            raise ValueError(f"{value} is not a valid Github URL.")
+        return value
+
+    @validates('linkedin_url')
+    def validate_linkedin_url(self, key, value):
+        if value.strip() == '':
+            return ''
+        elif not re.match(r"https?://(www.)?linkedin.com/in/[a-zA-Z0-9\-]{0, 39}/", value):
+            raise ValueError(f"{value} is not a valid LinkedIn URL.")
+        return value
 
 
 class Address(db.Model):
@@ -71,6 +99,18 @@ class Address(db.Model):
     line_two = db.Column(db.String(50))
     line_three = db.Column(db.String(50))
 
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    user = db.relationship('User', backref=db.backref("addresses", lazy=True))
 
-# class Education(db.Model):
-#    pass
+
+class Education(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    school = db.Column(db.String(50), nullable=False)
+    location = db.Column(db.String(50))
+    degree_and_field = db.Column(db.String(50))
+    date_from = db.Column(db.String(7), nullable=False)
+    date_to = db.Column(db.String(7))
+    gpa = db.Column(db.String(20))
+
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    user = db.relationship('User', backref=db.backref("education", lazy=True))

@@ -5,7 +5,7 @@ from graphene_sqlalchemy import SQLAlchemyConnectionField, SQLAlchemyObjectType
 from flask_graphql_auth import create_access_token, create_refresh_token
 
 from app.api.models import db
-from app.api.models import User as UserModel
+from app.api.models import User as UserModel, Profile as ProfileModel
 
 
 class UserType(SQLAlchemyObjectType):
@@ -28,8 +28,9 @@ class CreateUser(graphene.Mutation):
 
     def mutate(self, info, username, password):
         user = UserModel(username=username, password=password)
+        profile = ProfileModel(user=user)
         token = create_access_token(username)
-        db.session.add(user)
+        db.session.add(profile)
         db.session.commit()
 
         return CreateUser(user=user, token=token)

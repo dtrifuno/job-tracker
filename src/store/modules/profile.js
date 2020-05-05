@@ -1,12 +1,14 @@
+import doQuery from "@/link";
+
 const state = {
-  biographical: {
-    firstName: "Darko",
-    lastName: "Trifunovski",
-    email: "dtrifuno@gmail.com",
-    phoneNumber: "(832) 367-3567",
-    websiteUrl: "https://trifunovski.me",
-    githubUrl: "https://github.com/dtrifuno",
-    linkedUrl: "https://www.linkedin.com/in/darko-trifunovski/",
+  biographicalData: {
+    firstName: "",
+    lastName: "",
+    email: "",
+    phoneNumber: "",
+    websiteUrl: "",
+    githubUrl: "",
+    linkedinUrl: "",
   },
   addresses: [
     {
@@ -89,6 +91,52 @@ const state = {
 const getters = {};
 
 const actions = {
+  getProfile({ commit }) {
+    return doQuery(`query {
+      profile {
+        firstName,
+        lastName,
+        email,
+        phoneNumber,
+        websiteUrl,
+        githubUrl,
+        linkedinUrl
+      }}`).then((res) => commit("setBiographicalData", res.data.profile));
+  },
+  editBiographicalData({ commit }, biographicalData) {
+    const {
+      firstName,
+      lastName,
+      email,
+      phoneNumber,
+      websiteUrl,
+      githubUrl,
+      linkedinUrl,
+    } = biographicalData;
+    return doQuery(`mutation {
+      editBiographicalData(
+        firstName: "${firstName}",
+        lastName: "${lastName}",
+        email: "${email}",
+        phoneNumber: "${phoneNumber}",
+        websiteUrl: "${websiteUrl}",
+        githubUrl: "${githubUrl}",
+        linkedinUrl: "${linkedinUrl}"
+      ) {
+        profile {
+          firstName,
+          lastName,
+          email,
+          phoneNumber,
+          websiteUrl,
+          githubUrl,
+          linkedinUrl
+        }
+      }
+    }`).then((res) => {
+      commit("setBiographicalData", res.data.editBiographicalData.profile);
+    });
+  },
   //
   async createAddress({ commit }, address) {
     commit("addAddress", address);
@@ -133,6 +181,11 @@ const actions = {
 
 const mutations = {
   addAddress: (state, address) => state.addresses.unshift(address),
+  setBiographicalData: (state, biographicalData) =>
+    (state.biographicalData = {
+      ...state.biographicalData,
+      ...biographicalData,
+    }),
   updateAddress: (state, address) => {
     const idx = state.addresses.findIndex((x) => x.id === address.id);
     if (idx >= 0) {

@@ -8,7 +8,7 @@
         <h4 class="mb-0">Biographical</h4>
       </div>
       <div class="card-body">
-        <form novalidate>
+        <form novalidate @submit.prevent="onSubmit">
           <div class="row form-group">
             <div class="col">
               <label for="firstNameInput">First Name</label>
@@ -223,30 +223,65 @@ export default {
   },
   data() {
     return {
-      firstName: this.$store.state.profile.biographical.firstName,
-      lastName: this.$store.state.profile.biographical.lastName,
-      email: this.$store.state.profile.biographical.email,
-      phoneNumber: this.$store.state.profile.biographical.phoneNumber,
-      websiteUrl: this.$store.state.profile.biographical.websiteUrl,
-      githubUrl: this.$store.state.profile.biographical.githubUrl,
-      linkedinUrl: this.$store.state.profile.biographical.linkedUrl,
+      firstName: "",
+      lastName: "",
+      email: "",
+      phoneNumber: "",
+      websiteUrl: "",
+      githubUrl: "",
+      linkedinUrl: "",
     };
   },
   computed: {
     ...mapState({
+      biographicalData: (state) => state.profile.biographicalData,
       addresses: (state) => state.profile.addresses,
       education: (state) => state.profile.education,
       workHistory: (state) => state.profile.workHistory,
       projects: (state) => state.profile.projects,
     }),
   },
+  created() {
+    this.getProfile().then(() => this.extractBiographicalDataFromState());
+  },
   methods: {
     ...mapActions([
+      "getProfile",
+      "editBiographicalData",
       "deleteAddress",
       "deleteEducationExperience",
       "deleteWorkExperience",
       "deletePersonalProject",
     ]),
+    extractBiographicalDataToObject() {
+      return {
+        firstName: this.firstName,
+        lastName: this.lastName,
+        email: this.email,
+        phoneNumber: this.phoneNumber,
+        websiteUrl: this.websiteUrl,
+        githubUrl: this.githubUrl,
+        linkedinUrl: this.linkedinUrl,
+      };
+    },
+    setDataToObject(biographicalData) {
+      this.firstName = biographicalData.firstName;
+      this.lastName = biographicalData.lastName;
+      this.email = biographicalData.email;
+      this.phoneNumber = biographicalData.phoneNumber;
+      this.websiteUrl = biographicalData.websiteUrl;
+      this.githubUrl = biographicalData.githubUrl;
+      this.linkedinUrl = biographicalData.linkedinUrl;
+    },
+    extractBiographicalDataFromState() {
+      this.setDataToObject(this.biographicalData);
+    },
+    onSubmit() {
+      const oldBiographicalData = { ...this.biographicalData };
+      this.editBiographicalData(this.extractBiographicalDataToObject())
+        .then(() => this.extractBiographicalDataFromState())
+        .catch(() => this.setDataToObject(oldBiographicalData));
+    },
     renderMonth,
     addressToString(address) {
       return [address.lineOne, address.lineTwo, address.lineThree]

@@ -11,6 +11,9 @@ class Config:
     ACCESS_EXP_LENGTH = 100
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
+    JWT_HEADER_NAME = "Authorization"
+    JWT_HEADER_TOKEN_PREFIX = "Bearer"
+
     @staticmethod
     def init_app(app):
         pass
