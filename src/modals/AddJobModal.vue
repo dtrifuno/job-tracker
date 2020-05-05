@@ -3,12 +3,7 @@
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title">Add Job</h5>
-        <button
-          type="button"
-          class="close"
-          aria-label="Close"
-          @click="closeModal"
-        >
+        <button type="button" class="close" aria-label="Close" @click="closeModal">
           <span aria-hidden="true">×</span>
         </button>
       </div>
@@ -16,53 +11,27 @@
         <div class="container">
           <form>
             <div class="form-group row">
-              <label for="positionInput" class="col-form-label col-lg-2"
-                >Position</label
-              >
+              <label for="positionInput" class="col-form-label col-lg-2">Position</label>
               <div class="col-lg-10">
-                <input
-                  type="text"
-                  v-model="position"
-                  class="form-control"
-                  id="positionInput"
-                />
+                <input type="text" v-model="position" class="form-control" id="positionInput" />
               </div>
             </div>
             <div class="form-group row">
-              <label for="companyNameInput" class="col-form-label col-lg-2"
-                >Company</label
-              >
+              <label for="companyNameInput" class="col-form-label col-lg-2">Company</label>
               <div class="col-lg-10">
-                <input
-                  type="text"
-                  v-model="company"
-                  class="form-control"
-                  id="companyNameInput"
-                />
+                <input type="text" v-model="company" class="form-control" id="companyNameInput" />
               </div>
             </div>
             <div class="form-group row">
-              <label for="locationNameInput" class="col-form-label col-lg-2"
-                >Location</label
-              >
+              <label for="locationNameInput" class="col-form-label col-lg-2">Location</label>
               <div class="col-lg-10">
-                <input
-                  type="text"
-                  v-model="location"
-                  class="form-control"
-                  id="locationInput"
-                />
+                <input type="text" v-model="location" class="form-control" id="locationInput" />
               </div>
             </div>
             <div class="form-group row">
               <label for="urlInput" class="col-form-label col-lg-2">URL</label>
               <div class="col-lg-10">
-                <input
-                  type="url"
-                  v-model="url"
-                  class="form-control"
-                  id="urlInput"
-                />
+                <input type="url" v-model="url" class="form-control" id="urlInput" />
               </div>
             </div>
             <div class="form-group row">
@@ -76,9 +45,7 @@
               <small class="form-text text-muted">Use Markdown</small>
             </div>
             <div class="row">
-              <button type="submit" class="btn btn-primary ml-auto">
-                Submit
-              </button>
+              <button type="submit" class="btn btn-primary ml-auto" @click="onClickSubmit()">Submit</button>
             </div>
           </form>
         </div>
@@ -88,6 +55,8 @@
 </template>
 
 <script>
+import { mapActions } from "vuex";
+
 import modalProps from "./modalProps";
 
 export default {
@@ -99,13 +68,24 @@ export default {
       location: "",
       url: "",
       description: "",
-      modalProps,
+      modalProps
     };
   },
   methods: {
+    ...mapActions(["createJob"]),
+    onClickSubmit() {
+      const job = {
+        position: this.position,
+        company: this.company,
+        location: this.location,
+        url: this.url,
+        description: this.description
+      };
+      this.createJob(job);
+    },
     closeModal() {
       this.$modal.hide("AddJobModal");
-    },
-  },
+    }
+  }
 };
 </script>

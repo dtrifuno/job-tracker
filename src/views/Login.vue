@@ -3,14 +3,14 @@
     <div class="col-md-6 m-auto">
       <div class="card card-body mt-5">
         <h2 class="text-center">Login</h2>
-        <form @submit.prevent="null">
+        <form @submit.prevent="pressLogin">
           <div class="form-group">
-            <label for="emailInput">Email</label>
+            <label for="usernameInput">Username</label>
             <input
               type="text"
               class="form-control"
-              v-model="email"
-              id="emailInput"
+              v-model="username"
+              id="usernameInput"
             />
           </div>
           <div class="form-group">
@@ -23,7 +23,9 @@
             />
           </div>
           <div class="form-group">
-            <button type="submit" class="btn btn-primary">Login</button>
+            <button type="submit" class="btn btn-primary">
+              Login
+            </button>
           </div>
         </form>
         <small class="text-muted form-text">
@@ -37,13 +39,24 @@
 </template>
 
 <script>
+import { mapActions } from "vuex";
+
 export default {
   name: "Login",
   data() {
     return {
-      email: "",
+      username: "",
       password: "",
     };
+  },
+  methods: {
+    ...mapActions(["login"]),
+    pressLogin() {
+      const user = { username: this.username, password: this.password };
+      this.login(user)
+        .then(() => this.$router.push({ name: "jobs" }))
+        .catch((err) => err);
+    },
   },
 };
 </script>

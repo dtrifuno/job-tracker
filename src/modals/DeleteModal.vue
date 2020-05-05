@@ -9,8 +9,8 @@
       </div>
       <div class="modal-body">
         <div class="container">
-          <div>
-            <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Amet eos exercitationem obcaecati repellat, ut voluptas eum impedit quae quos ex dolorum, autem velit dignissimos perspiciatis magni doloremque est magnam nobis!</p>
+          <div class="row">
+            <p>Are you sure you want to delete {{ target }}? This action cannot be undone.</p>
           </div>
           <div class="float-right">
             <button type="submit" class="btn btn-primary mx-1" @click="onDelete">Yes</button>
@@ -29,14 +29,16 @@ export default {
   name: "DeleteModal",
   data() {
     return {
-      title: "Delete",
+      title: "",
+      target: "",
       deleteAction: null,
       modalProps
     };
   },
   methods: {
     beforeOpen(event) {
-      this.title = event.params.title || this.title;
+      this.title = event.params.title || "Delete";
+      this.target = event.params.target || "this item";
       this.deleteAction = event.params.deleteAction;
     },
     onDelete() {

@@ -15,11 +15,18 @@
                 started now.
               </p>
               <div class="pt-1 pb-3">
-                <button class="btn btn-secondary">Register</button>
+                <button
+                  class="btn btn-secondary"
+                  @click="$router.push({ name: 'register' })"
+                >
+                  Register
+                </button>
               </div>
               <small class="text-muted">
                 Already a user?
-                <router-link to="/login" class="text-white">Click here to login.</router-link>
+                <router-link to="/login" class="text-white"
+                  >Click here to login.</router-link
+                >
               </small>
             </div>
             <div class="col-lg-5">
@@ -68,7 +75,7 @@
 
 <script>
 export default {
-  name: "Landing"
+  name: "Landing",
 };
 </script>
 

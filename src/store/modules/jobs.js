@@ -65,7 +65,9 @@ const actions = {
     ];
     commit("setJobs", response);
   },
-  async createJob({ commit }, job) {},
+  async createJob({ commit }, job) {
+    commit("addJob", job);
+  },
   async updateJob({ commit }, job) {},
   async deleteJob({ commit }, jobID) {
     commit("removeJob", jobID);

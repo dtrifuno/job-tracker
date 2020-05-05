@@ -15,10 +15,20 @@
         <li v-for="(bullet, idx) in bullets" v-bind:key="idx">{{bullet}}</li>
       </ul>
       <div class="float-right">
-        <button type="button" class="btn btn-outline-success btn-sm mx-1" v-if="onEdit">
+        <button
+          type="button"
+          class="btn btn-outline-success btn-sm mx-1"
+          v-if="onEdit"
+          @click="onEdit"
+        >
           <i class="fas fa-edit" aria-hidden="true" />
         </button>
-        <button type="button" class="btn btn-outline-danger btn-sm" v-if="onDelete">
+        <button
+          type="button"
+          class="btn btn-outline-danger btn-sm"
+          v-if="onDelete"
+          @click="onDelete"
+        >
           <i class="fas fa-trash-alt" aria-hidden="true" />
         </button>
       </div>

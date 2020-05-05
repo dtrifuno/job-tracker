@@ -75,6 +75,14 @@ export default new Router({
       },
     },
     {
+      path: "/job",
+      name: "job-details",
+      component: () =>
+        import(
+          /* webpackChunkName: "job-details" */ "./views/JobDetails/index.vue"
+        ),
+    },
+    {
       path: "/profile",
       name: "profile",
       component: () =>

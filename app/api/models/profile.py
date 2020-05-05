@@ -1,5 +1,6 @@
 import datetime
 import re
+import string
 
 from sqlalchemy.orm import validates
 from werkzeug.security import check_password_hash, generate_password_hash
@@ -9,17 +10,21 @@ from . import db
 
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    email = db.Column(db.String(120), unique=True, nullable=False)
+    username = db.Column(db.String(100), unique=True, nullable=False)
     password_hash = db.Column(db.String(200))
     created_on = db.Column(db.DateTime, default=datetime.datetime.utcnow)
     last_login = db.Column(db.DateTime)
 
-    @validates('email')
-    def validate_email(self, key, value):
-        if self.query.filter_by(email=value).first():
-            raise ValueError("Email is already registered.")
-        elif not re.match("^[a-zA-Z0-9_+&*-]+(?:\\.[a-zA-Z0-9_+&*-]+)*@(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,7}$", value):
-            raise ValueError("Provided string is not a valid email address.")
+    @validates('username')
+    def validate_username(self, key, value):
+        for whitespace in string.whitespace:
+            if whitespace in value:
+                raise ValueError("Username cannot contain whitespace.")
+        if not 5 < len(value) < 20:
+            raise ValueError(
+                "Username must be between 6 and 20 characters in length.")
+        if self.query.filter_by(username=value).first():
+            raise ValueError("Username already token.")
         return value
 
     @property

@@ -28,7 +28,11 @@
         </tr>
       </thead>
       <tbody>
-        <tr v-for="job in filteredJobs" v-bind:key="job.id">
+        <tr
+          v-for="job in filteredJobs"
+          v-bind:key="job.id"
+          @click="$router.push({ name:'job-details', params: job })"
+        >
           <td>{{ job.company }}</td>
           <td>{{ job.position }}</td>
           <td>{{ job.location }}</td>
@@ -39,7 +43,7 @@
             <button
               type="button"
               class="btn btn-sm btn-outline-danger"
-              @click="showDeleteModal(job.id)"
+              @click="showDeleteModal(job)"
             >
               <i class="fas fa-trash-alt" aria-hidden="true" />
             </button>
@@ -73,15 +77,16 @@ export default {
     onSearchStringChange() {
       this.updateJobSearchString(this.searchString);
     },
-    showDeleteModal(id) {
+    showDeleteModal(job) {
       this.$modal.show("DeleteModal", {
         title: "Delete Job Application",
-        deleteAction: () => this.deleteJob(id)
+        target: ` your ${job.position} application at ${job.company} and all associated data`,
+        deleteAction: () => this.deleteJob(job.id)
       });
     }
   },
-  created() {
-    this.fetchJobs();
+  async created() {
+    await this.fetchJobs();
   }
 };
 </script>
