@@ -64,7 +64,7 @@ class Profile(db.Model):
     def validate_email(self, key, value):
         if value.strip() == '':
             return ''
-        elif validators.email(value):
+        elif not validators.email(value):
             raise ValueError(f"{value} is not a valid email address.")
         return value
 
@@ -72,7 +72,7 @@ class Profile(db.Model):
     def validate_website_url(self, key, value):
         if value.strip() == '':
             return ''
-        elif validators.url(value):
+        elif not validators.url(value):
             raise ValueError(f"{value} is not a valid URL.")
         return value
 
@@ -80,7 +80,7 @@ class Profile(db.Model):
     def validate_github_url(self, key, value):
         if value.strip() == '':
             return ''
-        elif not re.match(r"https?://(www.)?github.com/[a-zA-Z0-9\-]{0, 39}", value):
+        elif not re.match(r"^https?://(www.)?github.com/[a-zA-Z0-9\-]{1,39}$", value):
             raise ValueError(f"{value} is not a valid Github URL.")
         return value
 
@@ -88,7 +88,7 @@ class Profile(db.Model):
     def validate_linkedin_url(self, key, value):
         if value.strip() == '':
             return ''
-        elif not re.match(r"https?://(www.)?linkedin.com/in/[a-zA-Z0-9\-]{0, 39}/", value):
+        elif not re.match(r"^https?://(www.)?linkedin.com/in/[a-zA-Z0-9\-]{1,39}/$", value):
             raise ValueError(f"{value} is not a valid LinkedIn URL.")
         return value
 
@@ -102,6 +102,16 @@ class Address(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     user = db.relationship('User', backref=db.backref("addresses", lazy=True))
 
+    @validates("line_one")
+    def validate_line_one(self, key, value):
+        if value.strip() == '':
+            raise ValueError("Line One is a required field.")
+        return value
+
+
+def is_year_month(value):
+    return bool(re.match(r"^\d{4}-\d{2}$", value))
+
 
 class Education(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -111,6 +121,83 @@ class Education(db.Model):
     date_from = db.Column(db.String(7), nullable=False)
     date_to = db.Column(db.String(7))
     gpa = db.Column(db.String(20))
+    description = db.Column(db.Text())
 
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     user = db.relationship('User', backref=db.backref("education", lazy=True))
+
+    @validates("school")
+    def validate_school(self, key, value):
+        if value.strip() == '':
+            raise ValueError("School is a required field.")
+        return value
+
+    @validates("date_from")
+    def validate_date_from(self, key, value):
+        if value.strip() == '':
+            raise ValueError("Date From is a required field.")
+        elif not is_year_month(value):
+            raise ValueError(f"{value} is not a valid yyyy-mm string.")
+        return value
+
+    @validates("date_to")
+    def validate_date_to(self, key, value):
+        if value.strip() and not is_year_month(value):
+            raise ValueError(f"{value} is not a valid yyyy-mm string.")
+        return value
+
+
+class Skill(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    skill = db.Column(db.String(50))
+    category = db.Column(db.String(50))
+
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    user = db.relationship('User', backref=db.backref('skills', lazy=True))
+
+    @validates("skill")
+    def validate_skill(self, key, value):
+        if value.strip() == '':
+            raise ValueError("Skill is a required field.")
+        return value
+
+
+
+class WorkExperience(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    company = db.Column(db.String(50), nullable=False)
+    location = db.Column(db.String(50), nullable=False)
+    position = db.Column(db.String(50))
+    date_from = db.Column(db.String(7), nullable=False)
+    date_to = db.Column(db.String(7))
+    description = db.Column(db.Text())
+
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    user = db.relationship(
+        'User', backref=db.backref('work_history', lazy=True))
+
+    @validates("company")
+    def validate_company(self, key, value):
+        if value.strip() == '':
+            raise ValueError("Company is a required field.")
+        return value
+
+    @validates("position")
+    def validate_position(self, key, value):
+        if value.strip() == '':
+            raise ValueError("Position is a required field.")
+        return value
+
+    @validates("date_from")
+    def validate_date_from(self, key, value):
+        if value.strip() == '':
+            raise ValueError("Date From is a required field.")
+        elif not is_year_month(value):
+            raise ValueError(f"{value} is not a valid yyyy-mm string.")
+        return value
+
+    @validates("date_to")
+    def validate_date_to(self, key, value):
+        if value.strip() and not is_year_month(value):
+            raise ValueError(f"{value} is not a valid yyyy-mm string.")
+        return value

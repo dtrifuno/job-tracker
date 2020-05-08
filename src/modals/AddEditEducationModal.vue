@@ -64,7 +64,7 @@
               <button
                 type="submit"
                 class="btn btn-primary ml-auto"
-                @click="isUpdate ? onClickEdit() : onClickSubmit()"
+                @click.prevent="isUpdate ? onClickEdit() : onClickSubmit()"
               >Submit</button>
             </div>
           </div>
@@ -97,59 +97,53 @@ export default {
   },
   methods: {
     ...mapActions(["createEducationExperience", "editEducationExperience"]),
+    extractDataToObject() {
+      const data = {
+        school: this.school,
+        location: this.location,
+        degreeAndField: this.degreeAndField,
+        gpa: this.gpa,
+        dateFrom: this.dateFrom,
+        dateTo: this.dateTo,
+        description: this.description
+      };
+      return data;
+    },
+    setDataFromObject(data) {
+      for (const [field, value] of Object.entries(data)) {
+        this[field] = value;
+      }
+    },
+    clearFields() {
+      const clearData = {
+        school: "",
+        location: "",
+        degreeAndField: "",
+        gpa: "",
+        dateFrom: "",
+        dateTo: "",
+        description: "",
+      }
+      this.setDataFromObject(clearData);
+    },
     beforeOpen(event) {
       if (event.params && event.params.educationExperience) {
-        [
-          "school",
-          "location",
-          "degreeAndField",
-          "gpa",
-          "dateFrom",
-          "dateTo",
-          "description"
-        ].forEach(
-          field => (this[field] = event.params.educationExperience[field])
-        );
+        this.setDataFromObject(event.params.educationExperience);
         this.id = event.params.educationExperience.id;
         this.isUpdate = true;
       } else {
-        [
-          "school",
-          "location",
-          "degreeAndField",
-          "gpa",
-          "dateFrom",
-          "dateTo",
-          "description"
-        ].forEach(field => (this[field] = ""));
+        this.clearFields();
         this.isUpdate = false;
         this.id = null;
       }
     },
     async onClickSubmit() {
-      const educationExperience = {
-        school: this.school,
-        location: this.location,
-        degreeAndField: this.degreeAndField,
-        gpa: this.gpa,
-        dateFrom: this.dateFrom,
-        dateTo: this.dateTo,
-        description: this.description
-      };
-      await this.createEducationExperience(educationExperience);
+      const educationExperienceData = this.extractDataToObject();
+      this.createEducationExperience({educationExperienceData}).then(() => this.closeModal());
     },
     async onClickEdit() {
-      const educationExperience = {
-        id: this.id,
-        school: this.school,
-        location: this.location,
-        degreeAndField: this.degreeAndField,
-        gpa: this.gpa,
-        dateFrom: this.dateFrom,
-        dateTo: this.dateTo,
-        description: this.description
-      };
-      await this.editEducationExperience(educationExperience);
+      const educationExperienceData = this.extractDataToObject();
+      this.editEducationExperience({id: this.id, educationExperienceData}).then(() => this.closeModal());
     },
     closeModal() {
       this.$modal.hide("AddEditEducationModal");

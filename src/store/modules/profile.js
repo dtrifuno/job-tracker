@@ -1,4 +1,9 @@
-import doQuery from "@/link";
+import {
+  doQuery,
+  doCreateFromObject,
+  doDelete,
+  doEditFromObject,
+} from "@/link";
 
 const state = {
   biographicalData: {
@@ -10,45 +15,8 @@ const state = {
     githubUrl: "",
     linkedinUrl: "",
   },
-  addresses: [
-    {
-      id: 1,
-      lineOne: "548 West Briar Place Apt. 2E",
-      lineTwo: "Chicago, IL, 60657",
-      lineThree: "",
-    },
-    {
-      id: 2,
-      lineOne: "11714 Cardinal Hills Court",
-      lineTwo: "Cypress, TX, 77433",
-      lineThree: "",
-    },
-  ],
-  education: [
-    {
-      id: 11,
-      school: "University of Illinois at Chicago",
-      location: "Chicago, IL",
-      degreeAndField: "Doctor of Philosophy in Mathematics",
-      gpa: "3.7/4.0",
-      dateFrom: "2013-08",
-      dateTo: "2020-12",
-      description: `Thesis: Rankin-Selberg L-functions of the Unitary Similitude Group of Order Two
-        Relevant Coursework: Computer Networking, Mathematical Foundations of Data Science, Statistical Techniques for Machine Learning, Software Vulnerability Analysis, Computational Finance`,
-    },
-    {
-      id: 12,
-      school: "Reed College",
-      location: "Portland, OR",
-      degreeAndField: "Bachelor of Arts in Mathematics",
-      gpa: "3.8/4.0",
-      dateFrom: "2009-08",
-      dateTo: "2013-05",
-      description: `Thesis: Computing the Extreme Core of Siegel Modular Forms, Advisor: Jerry Shurman
-         Phi Beta Kappa
-         Relevant Coursework: Algorithms and Data Structures, Parallel Computing, Distributed Systems, Theory of Computation, Programming Languages`,
-    },
-  ],
+  addresses: [],
+  education: [],
   skills: [
     { skill: "C++", category: "Languages" },
     { skill: "Python", category: "Languages" },
@@ -91,8 +59,9 @@ const state = {
 const getters = {};
 
 const actions = {
+  // Biographical data actions
   getProfile({ commit }) {
-    return doQuery(`query {
+    return doQuery(`
       profile {
         firstName,
         lastName,
@@ -100,63 +69,81 @@ const actions = {
         phoneNumber,
         websiteUrl,
         githubUrl,
-        linkedinUrl
-      }}`).then((res) => commit("setBiographicalData", res.data.profile));
-  },
-  editBiographicalData({ commit }, biographicalData) {
-    const {
-      firstName,
-      lastName,
-      email,
-      phoneNumber,
-      websiteUrl,
-      githubUrl,
-      linkedinUrl,
-    } = biographicalData;
-    return doQuery(`mutation {
-      editBiographicalData(
-        firstName: "${firstName}",
-        lastName: "${lastName}",
-        email: "${email}",
-        phoneNumber: "${phoneNumber}",
-        websiteUrl: "${websiteUrl}",
-        githubUrl: "${githubUrl}",
-        linkedinUrl: "${linkedinUrl}"
-      ) {
-        profile {
-          firstName,
-          lastName,
-          email,
-          phoneNumber,
-          websiteUrl,
-          githubUrl,
-          linkedinUrl
-        }
+        linkedinUrl,
+      },
+      addresses {
+        id,
+        lineOne,
+        lineTwo,
+        lineThree
+      },
+      education {
+        id,
+        school,
+        location,
+        degreeAndField,
+        gpa,
+        dateFrom,
+        dateTo,
+        description
       }
-    }`).then((res) => {
-      commit("setBiographicalData", res.data.editBiographicalData.profile);
+    `).then((res) => {
+      commit("setBiographicalData", res.data.profile);
+      commit("setAddresses", res.data.addresses);
+      commit("setEducation", res.data.education);
     });
   },
-  //
-  async createAddress({ commit }, address) {
-    commit("addAddress", address);
+  editBiographicalData({ commit }, biographicalData) {
+    doEditFromObject("editBiographicalData", "profile", biographicalData).then(
+      (res) => {
+        commit("setBiographicalData", res.data.editBiographicalData.profile);
+      }
+    );
   },
-  async editAddress({ commit }, address) {
-    commit("updateAddress", address);
+
+  // Address actions
+  async createAddress({ commit }, addressData) {
+    return doCreateFromObject("address", addressData)
+      .then((res) => commit("addAddress", res.data.createAddress.address))
+      .catch((err) => console.log(err));
   },
-  async deleteAddress({ commit }, addressID) {
-    commit("removeAddress", addressID);
+  async editAddress({ commit }, {id, addressData}) {
+    console.log({id, addressData})
+    return doEditFromObject("address", id, addressData).then((res) =>
+      commit("updateAddress", res.data.editAddress.address)
+    );
   },
-  //
-  async createEducationExperience({ commit }, educationExperience) {
-    commit("addEducationExperience", educationExperience);
+  async deleteAddress({ commit }, addressId) {
+    return doDelete("deleteAddress", addressId).then(() =>
+      commit("removeAddress", addressId)
+    );
   },
-  async editEducationExperience({ commit }, educationExperience) {
-    commit("updateEducationExperience", educationExperience);
+
+  // Education experience actions
+  createEducationExperience({ commit }, educationExperienceData) {
+    return doCreateFromObject("educationExperience", educationExperienceData).then((res) =>
+      commit(
+        "addEducationExperience",
+        res.data.createEducationExperience.educationExperience
+      )
+    );
   },
-  async deleteEducationExperience({ commit }, educationID) {
-    commit("removeEducationExperience", educationID);
+  editEducationExperience({ commit }, {id, educationExperienceData}) {
+    return doEditFromObject("educationExperience", id, educationExperienceData).then((res) =>
+      commit(
+        "updateEducationExperience",
+        res.data.editEducationExperience.educationExperience
+      )
+    );
   },
+  async deleteEducationExperience({ commit }, educationId) {
+    return doDelete("deleteEducationExperience", educationId).then(() =>
+      commit("removeEducationExperience", educationId)
+    );
+  },
+
+  // Skills actions
+
   //
   async createWorkExperience({ commit }, workExperience) {
     commit("addWorkExperience", workExperience);
@@ -167,6 +154,7 @@ const actions = {
   async deleteWorkExperience({ commit }, workID) {
     commit("removeWorkExperience", workID);
   },
+
   //
   async createPersonalProject({ commit }, personalProject) {
     commit("addPersonalProject", personalProject);
@@ -181,6 +169,8 @@ const actions = {
 
 const mutations = {
   addAddress: (state, address) => state.addresses.unshift(address),
+  setAddresses: (state, addresses) => (state.addresses = addresses),
+  setEducation: (state, education) => (state.education = education),
   setBiographicalData: (state, biographicalData) =>
     (state.biographicalData = {
       ...state.biographicalData,

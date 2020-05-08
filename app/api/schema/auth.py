@@ -2,7 +2,7 @@ from graphql import GraphQLError
 import graphene
 from graphene import relay
 from graphene_sqlalchemy import SQLAlchemyConnectionField, SQLAlchemyObjectType
-from flask_graphql_auth import create_access_token, create_refresh_token
+from flask_graphql_auth import create_access_token, create_refresh_token, query_header_jwt_required, get_jwt_identity
 
 from app.api.models import db
 from app.api.models import User as UserModel, Profile as ProfileModel
@@ -15,7 +15,13 @@ class UserType(SQLAlchemyObjectType):
 
 
 class Query(graphene.ObjectType):
-    user = relay.Node.Field(UserType)
+    user = graphene.Field(UserType)
+
+    @query_header_jwt_required
+    def resolve_user(self, info):
+        username = get_jwt_identity()
+        user = UserModel.query.filter_by(username=get_jwt_identity()).first()
+        return user
 
 
 class CreateUser(graphene.Mutation):

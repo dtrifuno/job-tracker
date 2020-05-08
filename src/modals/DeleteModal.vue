@@ -3,18 +3,38 @@
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title">{{ title }}</h5>
-        <button type="button" class="close" aria-label="Close" @click="closeModal">
+        <button
+          type="button"
+          class="close"
+          aria-label="Close"
+          @click="closeModal"
+        >
           <span aria-hidden="true">×</span>
         </button>
       </div>
       <div class="modal-body">
         <div class="container">
           <div class="row">
-            <p>Are you sure you want to delete {{ target }}? This action cannot be undone.</p>
+            <p>
+              Are you sure you want to delete {{ target }}? This action cannot
+              be undone.
+            </p>
           </div>
           <div class="float-right">
-            <button type="submit" class="btn btn-primary mx-1" @click="onDelete">Yes</button>
-            <button type="submit" class="btn btn-secondary mx-1" @click="closeModal">No</button>
+            <button
+              type="submit"
+              class="btn btn-primary mx-1"
+              @click="onDelete"
+            >
+              Yes
+            </button>
+            <button
+              type="submit"
+              class="btn btn-secondary mx-1"
+              @click="closeModal"
+            >
+              No
+            </button>
           </div>
         </div>
       </div>
@@ -32,7 +52,7 @@ export default {
       title: "",
       target: "",
       deleteAction: null,
-      modalProps
+      modalProps,
     };
   },
   methods: {
@@ -42,12 +62,11 @@ export default {
       this.deleteAction = event.params.deleteAction;
     },
     onDelete() {
-      this.deleteAction();
-      this.closeModal();
+      this.deleteAction().then(() => this.closeModal());
     },
     closeModal() {
       this.$modal.hide("DeleteModal");
-    }
-  }
+    },
+  },
 };
 </script>

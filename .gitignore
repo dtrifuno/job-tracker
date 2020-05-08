@@ -19,13 +19,12 @@ yarn-error.log*
 *.njsproj
 *.sln
 *.sw?
-# Created by https://www.gitignore.io/api/vue,flask
-# Edit at https://www.gitignore.io/?templates=vue,flask
 
 ### Flask ###
 instance/*
 !instance/.gitignore
 .webassets-cache
+.env
 
 ### Flask.Python Stack ###
 # Byte-compiled / optimized / DLL files
