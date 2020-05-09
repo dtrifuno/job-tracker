@@ -121,7 +121,7 @@ class Education(db.Model):
     date_from = db.Column(db.String(7), nullable=False)
     date_to = db.Column(db.String(7))
     gpa = db.Column(db.String(20))
-    description = db.Column(db.Text())
+    description = db.Column(db.Text(1000))
 
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     user = db.relationship('User', backref=db.backref("education", lazy=True))
@@ -146,6 +146,10 @@ class Education(db.Model):
             raise ValueError(f"{value} is not a valid yyyy-mm string.")
         return value
 
+    @validates("description")
+    def validate_description(self, key, value):
+        return re.sub(r"\n+", "\n", value.strip())
+
 
 class Skill(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -162,7 +166,6 @@ class Skill(db.Model):
         return value
 
 
-
 class WorkExperience(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     company = db.Column(db.String(50), nullable=False)
@@ -170,7 +173,7 @@ class WorkExperience(db.Model):
     position = db.Column(db.String(50))
     date_from = db.Column(db.String(7), nullable=False)
     date_to = db.Column(db.String(7))
-    description = db.Column(db.Text())
+    description = db.Column(db.Text(1000))
 
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     user = db.relationship(
@@ -201,3 +204,35 @@ class WorkExperience(db.Model):
         if value.strip() and not is_year_month(value):
             raise ValueError(f"{value} is not a valid yyyy-mm string.")
         return value
+
+    @validates("description")
+    def validate_description(self, key, value):
+        return re.sub(r"\n+", "\n", value.strip())
+
+
+class PersonalProject(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    project_name = db.Column(db.String(50), nullable=False)
+    url = db.Column(db.String(50), nullable=False)
+    description = db.Column(db.Text())
+
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    user = db.relationship('User', backref=db.backref('personal_projects', lazy=True))
+
+    @validates("project_name")
+    def validate_project_name(self, key, value):
+        if value.strip() == '':
+            raise ValueError("Project Name is a required field.")
+        return value
+
+    @validates('url')
+    def validate_url(self, key, value):
+        if value.strip() == '':
+            return ''
+        elif not validators.url(value):
+            raise ValueError(f"{value} is not a valid URL.")
+        return value
+
+    @validates("description")
+    def validate_description(self, key, value):
+        return re.sub(r"\n+", "\n", value.strip())

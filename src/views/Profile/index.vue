@@ -12,70 +12,35 @@
           <div class="row form-group">
             <div class="col">
               <label for="firstNameInput">First Name</label>
-              <input
-                type="text"
-                class="form-control"
-                id="firstNameInput"
-                v-model="firstName"
-              />
+              <input type="text" class="form-control" id="firstNameInput" v-model="firstName" />
             </div>
             <div class="col">
               <label for="lastNameInput">Last Name</label>
-              <input
-                type="text"
-                class="form-control"
-                id="lastNameInput"
-                v-model="lastName"
-              />
+              <input type="text" class="form-control" id="lastNameInput" v-model="lastName" />
             </div>
           </div>
 
           <div class="row form-group">
             <div class="col">
               <label for="emailInput">Email</label>
-              <input
-                type="email"
-                class="form-control"
-                id="emailInput"
-                v-model="email"
-              />
+              <input type="email" class="form-control" id="emailInput" v-model="email" />
             </div>
             <div class="col">
               <label for="phoneNumberInput">Phone Number</label>
-              <input
-                type="tel"
-                class="form-control"
-                id="phoneNumberInput"
-                v-model="phoneNumber"
-              />
+              <input type="tel" class="form-control" id="phoneNumberInput" v-model="phoneNumber" />
             </div>
           </div>
           <div class="form-group">
             <label for="websiteUrlInput">Personal Website</label>
-            <input
-              type="url"
-              class="form-control"
-              id="websiteUrlInput"
-              v-model="websiteUrl"
-            />
+            <input type="url" class="form-control" id="websiteUrlInput" v-model="websiteUrl" />
           </div>
           <div class="form-group">
             <label for="githubUrlInput">Github URL</label>
-            <input
-              type="url"
-              class="form-control"
-              id="githubUrlInput"
-              v-model="githubUrl"
-            />
+            <input type="url" class="form-control" id="githubUrlInput" v-model="githubUrl" />
           </div>
           <div class="form-group">
             <label for="linkedinUrlInput">LinkedIn URL</label>
-            <input
-              type="url"
-              class="form-control"
-              id="linkedinUrlInput"
-              v-model="linkedinUrl"
-            />
+            <input type="url" class="form-control" id="linkedinUrlInput" v-model="linkedinUrl" />
           </div>
           <button type="submit" class="btn btn-primary">Update</button>
         </form>
@@ -83,16 +48,10 @@
     </div>
 
     <div class="card row">
-      <div class="card-header">
-        <h4 class="mb-0">Addresses</h4>
-      </div>
+      <CardTitle title="Addresses" :onClick="showAddAddressModal" />
       <div class="card-body">
         <div class="list-group">
-          <div
-            v-for="address in addresses"
-            v-bind:key="address.id"
-            class="list-group-item"
-          >
+          <div v-for="address in addresses" v-bind:key="address.id" class="list-group-item">
             <div class="float-left py-2">{{ addressToString(address) }}</div>
             <div class="float-right">
               <button
@@ -112,21 +71,14 @@
             </div>
           </div>
         </div>
-        <div class="pt-3">
-          <button class="btn btn-primary" @click="showAddAddressModal">
-            Add an Address
-          </button>
-        </div>
       </div>
     </div>
 
     <div class="card row">
-      <div class="card-header">
-        <h4 class="mb-0">Education</h4>
-      </div>
+      <CardTitle title="Education" :onClick="showAddEducationModal" />
       <div class="container">
         <CVItem
-          v-for="school in education"
+          v-for="school in sortedEducation"
           v-bind:key="school.id"
           :heading="school.school"
           :headingRight="school.location"
@@ -136,37 +88,43 @@
           :subheadingRight="
             `${renderMonth(school.dateFrom)} - ${renderMonth(school.dateTo)}`
           "
-          :bullets="school.description.split('\n')"
+          :bullets="school.description ? school.description.split('\n'): []"
           :onEdit="() => showEditEducationModal(school)"
           :onDelete="() => showDeleteEducationModal(school)"
         />
       </div>
+    </div>
+
+    <div class="card row">
+      <CardTitle title="Skills" :onClick="showAddSkillModal" />
       <div class="card-body">
-        <button class="btn btn-primary" @click="showAddEducationModal">
-          Add Education
-        </button>
+        <table class="table table-bordered table-sm">
+          <thead>
+            <th style="width: 14%" scope="col">Category</th>
+            <th style="width: 86%" scope="col">Skills</th>
+          </thead>
+          <tbody>
+            <tr v-for="(category, idx) in groupedSkills.sortedCategories" :key="idx">
+              <th style="vertical-align: middle">{{category}}</th>
+              <td>
+                <button
+                  class="btn btn-secondary"
+                  v-for="skill in groupedSkills.sortedSkills[category]"
+                  :key="skill.id"
+                  @click="() => showEditSkillModal(skill)"
+                >{{skill.skill}}</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </div>
     </div>
 
     <div class="card row">
-      <div class="card-header">
-        <h4 class="mb-0">Skills</h4>
-      </div>
-      <div class="card-body">
-        <br />
-        <button class="btn btn-primary" @click="showAddSkillModal">
-          Add a Skill
-        </button>
-      </div>
-    </div>
-
-    <div class="card row">
-      <div class="card-header">
-        <h4 class="mb-0">Work History</h4>
-      </div>
+      <CardTitle title="Work History" :onClick="showAddWorkExperienceModal" />
       <div class="container">
         <CVItem
-          v-for="job in workHistory"
+          v-for="job in sortedWorkHistory"
           v-bind:key="job.id"
           :heading="job.company"
           :headingRight="job.location"
@@ -174,52 +132,43 @@
           :subheadingRight="
             `${renderMonth(job.dateFrom)} - ${renderMonth(job.dateTo)}`
           "
-          :bullets="job.description.split('\n')"
+          :bullets="job.description ? job.description.split('\n') : []"
           :onEdit="() => showEditWorkExperienceModal(job)"
           :onDelete="() => showDeleteWorkExperienceModal(job)"
         />
       </div>
-      <div class="card-body">
-        <button class="btn btn-primary" @click="showAddWorkExperienceModal">
-          Add a Work Experience
-        </button>
-      </div>
     </div>
 
     <div class="card row">
-      <div class="card-header">
-        <h4 class="mb-0">Personal Projects</h4>
-      </div>
+      <CardTitle title="Personal Projects" :onClick="showAddPersonalProjectModal" />
       <div class="container">
         <CVItem
           v-for="project in projects"
           v-bind:key="project.id"
           :heading="project.projectName"
           :headingRight="project.url"
-          :bullets="project.description.split('\n')"
+          :bullets="project.description ? project.description.split('\n') : []"
           :onDelete="() => showDeletePersonalProjectModal(project)"
           :onEdit="() => showEditPersonalProjectModal(project)"
         />
-      </div>
-      <div class="card-body">
-        <button class="btn btn-primary" @click="showAddPersonalProjectModal">
-          Add a Personal Project
-        </button>
       </div>
     </div>
   </div>
 </template>
 
 <script>
-import { mapState, mapActions } from "vuex";
+import { mapState, mapActions, mapGetters } from "vuex";
 
 import { renderMonth } from "@/utils.js";
+
+import CardTitle from "./CardTitle";
 import CVItem from "./CVItem";
 
 export default {
   name: "Profile",
   components: {
     CVItem,
+    CardTitle
   },
   data() {
     return {
@@ -229,17 +178,16 @@ export default {
       phoneNumber: "",
       websiteUrl: "",
       githubUrl: "",
-      linkedinUrl: "",
+      linkedinUrl: ""
     };
   },
   computed: {
     ...mapState({
-      biographicalData: (state) => state.profile.biographicalData,
-      addresses: (state) => state.profile.addresses,
-      education: (state) => state.profile.education,
-      workHistory: (state) => state.profile.workHistory,
-      projects: (state) => state.profile.projects,
+      biographicalData: state => state.profile.biographicalData,
+      addresses: state => state.profile.addresses,
+      projects: state => state.profile.projects
     }),
+    ...mapGetters(["sortedEducation", "sortedWorkHistory", "groupedSkills"])
   },
   created() {
     this.getProfile().then(() => this.extractBiographicalDataFromState());
@@ -251,7 +199,7 @@ export default {
       "deleteAddress",
       "deleteEducationExperience",
       "deleteWorkExperience",
-      "deletePersonalProject",
+      "deletePersonalProject"
     ]),
     extractBiographicalDataToObject() {
       return {
@@ -261,7 +209,7 @@ export default {
         phoneNumber: this.phoneNumber,
         websiteUrl: this.websiteUrl,
         githubUrl: this.githubUrl,
-        linkedinUrl: this.linkedinUrl,
+        linkedinUrl: this.linkedinUrl
       };
     },
     setDataToObject(biographicalData) {
@@ -285,7 +233,7 @@ export default {
     renderMonth,
     addressToString(address) {
       return [address.lineOne, address.lineTwo, address.lineThree]
-        .filter((x) => x)
+        .filter(x => x)
         .join(", ");
     },
 
@@ -297,12 +245,12 @@ export default {
       this.$modal.show("DeleteModal", {
         title: "Delete Address",
         target: `the address ${this.addressToString(address)}`,
-        deleteAction: () => this.deleteAddress(address.id),
+        deleteAction: () => this.deleteAddress(address.id)
       });
     },
     showEditAddressModal(address) {
       this.$modal.show("AddEditAddressModal", {
-        address,
+        address
       });
     },
 
@@ -315,12 +263,12 @@ export default {
         title: "Delete Educational Experience",
         target: "this educational experience",
         deleteAction: () =>
-          this.deleteEducationExperience(educationExperience.id),
+          this.deleteEducationExperience(educationExperience.id)
       });
     },
     showEditEducationModal(educationExperience) {
       this.$modal.show("AddEditEducationModal", {
-        educationExperience,
+        educationExperience
       });
     },
 
@@ -332,17 +280,23 @@ export default {
       this.$modal.show("DeleteModal", {
         title: "Delete Personal Project",
         target: personalProject.projectName,
-        deleteAction: () => this.deletePersonalProject(personalProject.id),
+        deleteAction: () => this.deletePersonalProject(personalProject.id)
       });
     },
     showEditPersonalProjectModal(personalProject) {
       this.$modal.show("AddEditPersonalProjectModal", {
-        personalProject,
+        personalProject
       });
     },
 
+    // Skills modals
     showAddSkillModal() {
       this.$modal.show("AddEditSkillModal");
+    },
+    showEditSkillModal(skill) {
+      this.$modal.show("AddEditSkillModal", {
+        skill
+      });
     },
 
     // Work experience modals
@@ -352,29 +306,25 @@ export default {
     showDeleteWorkExperienceModal(workExperience) {
       this.$modal.show("DeleteModal", {
         title: "Delete Work Experience",
-        deleteAction: () => this.deleteWorkExperience(workExperience.id),
+        deleteAction: () => this.deleteWorkExperience(workExperience.id)
       });
     },
     showEditWorkExperienceModal(workExperience) {
       this.$modal.show("AddEditWorkExperienceModal", {
-        workExperience,
+        workExperience
       });
-    },
-  },
+    }
+  }
 };
 </script>
 
 <style>
 .card {
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.6rem;
 }
 
 h2,
 .card-header {
   user-select: none;
-}
-
-.ti-tag {
-  background-color: #1a1a1a !important;
 }
 </style>

@@ -1,17 +1,17 @@
 <template>
-  <div class="card my-1">
-    <div class="card-body">
+  <div class="card my-2">
+    <div class="card-body mx-2">
       <div>
         <h5 class="mb-0 float-left">{{ heading }}</h5>
-        <span class="float-right">{{ headingRight }}</span>
+        <h6 class="mb-0 float-right">{{headingRight}}</h6>
         <br />
       </div>
       <div v-if="subheading || subheadingRight">
-        <span class="float-left">{{ subheading }}</span>
-        <span class="float-right">{{ subheadingRight }}</span>
+        <span class="float-left font-weight-bold">{{ subheading }}</span>
+        <span class="float-right font-italic">{{ subheadingRight }}</span>
         <br />
       </div>
-      <ul v-if="bullets">
+      <ul class="mb-0 pl-4" v-if="bullets">
         <li v-for="(bullet, idx) in bullets" v-bind:key="idx">{{bullet}}</li>
       </ul>
       <div class="float-right">

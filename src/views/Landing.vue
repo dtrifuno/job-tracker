@@ -47,13 +47,13 @@
             <h4>Apply to Jobs</h4>
             <p
               class="mb-0"
-            >Keep track of job openings you are interested in by adding them to the Jobs sections. Store information like job title, company, location and detailed job description.</p>
+            >Keep track of job openings you are interested in by adding them to the Jobs sections. Store information like job title, company, location and a detailed job description.</p>
           </div>
           <div class="col-lg-4 mb-5 mb-lg-0">
             <h4>Track Status</h4>
             <p
               class="mb-0"
-            >Monitor the status and scheduling for each of your application. Get summary statistics like total number of applications submitted during your job search.</p>
+            >Monitor the status of each of your applications. Organize your calendar by keeping track of interview scheduling and assessment deadlines. Get summary statistics like total number of applications submitted.</p>
           </div>
         </div>
       </div>

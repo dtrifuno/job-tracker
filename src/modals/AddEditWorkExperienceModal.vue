@@ -50,7 +50,7 @@
               <button
                 type="submit"
                 class="btn btn-primary ml-auto"
-                @click="isUpdate ? onClickEdit() : onClickSubmit()"
+                @click.prevent="isUpdate ? onClickEdit() : onClickSubmit()"
               >Submit</button>
             </div>
           </form>
@@ -81,54 +81,66 @@ export default {
     };
   },
   methods: {
-    ...mapActions(["createWorkExperience", "editWorkExperience"]),
+    ...mapActions([
+      "createWorkExperience",
+      "editWorkExperience",
+      "flashSuccess"
+    ]),
+    extractDataToObject() {
+      const data = {
+        position: this.position,
+        company: this.company,
+        location: this.location,
+        dateFrom: this.dateFrom,
+        dateTo: this.dateTo,
+        description: this.description
+      };
+      return data;
+    },
+    setDataFromObject(data) {
+      for (const [field, value] of Object.entries(data)) {
+        this[field] = value;
+      }
+    },
+    clearFields() {
+      const data = {
+        position: "",
+        company: "",
+        location: "",
+        dateFrom: "",
+        dateTo: "",
+        description: ""
+      };
+      this.setDataFromObject(data);
+    },
     beforeOpen(event) {
       if (event.params && event.params.workExperience) {
-        [
-          "position",
-          "company",
-          "location",
-          "dateFrom",
-          "dateTo",
-          "description"
-        ].forEach(field => (this[field] = event.params.workExperience[field]));
+        this.setDataFromObject(event.params.workExperience);
         this.id = event.params.workExperience.id;
         this.isUpdate = true;
       } else {
-        [
-          "position",
-          "company",
-          "location",
-          "dateFrom",
-          "dateTo",
-          "description"
-        ].forEach(field => (this[field] = ""));
+        this.clearFields();
         this.isUpdate = false;
         this.id = null;
       }
     },
     async onClickSubmit() {
-      const workExperience = {
-        position: this.position,
-        company: this.company,
-        location: this.location,
-        dateFrom: this.dateFrom,
-        dateTo: this.dateTo,
-        description: this.description
-      };
-      await this.createWorkExperience(workExperience);
+      await this.createWorkExperience({
+        workExperienceData: this.extractDataToObject()
+      })
+        .then(() => {
+          this.closeModal();
+          this.flashSuccess("Work experience sucessfully added.");
+        })
+        .catch(err => err);
     },
     async onClickEdit() {
-      const workExperience = {
+      await this.editWorkExperience({
         id: this.id,
-        position: this.position,
-        company: this.company,
-        location: this.location,
-        dateFrom: this.dateFrom,
-        dateTo: this.dateTo,
-        description: this.description
-      };
-      await this.editWorkExperience(workExperience);
+        workExperienceData: this.extractDataToObject()
+      })
+        .then(this.closeModal)
+        .catch(err => err);
     },
     closeModal() {
       this.$modal.hide("AddEditWorkExperienceModal");

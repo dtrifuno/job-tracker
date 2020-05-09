@@ -17,80 +17,79 @@ const state = {
   },
   addresses: [],
   education: [],
-  skills: [
-    { skill: "C++", category: "Languages" },
-    { skill: "Python", category: "Languages" },
-    { skill: "JavaScript", category: "Languages" },
-    { skill: "PostgreSQL", category: "Databases" },
-    { skill: "SQLite", category: "Databases" },
-    { skill: "MongoDB", category: "Databases" },
-  ],
-  workHistory: [
-    {
-      company: "University of Illinois at Chicago",
-      position: "Graduate Teaching Assistant",
-      location: "Chicago, IL",
-      dateFrom: "2013-08",
-      dateTo: "2019-07",
-      description: `Led discussion sections for calculus, differential equations and linear algebra courses.
-        Taught developmental summer courses for incoming freshmen.
-        Provided drop-in tutoring at the UIC Mathematical Sciences Learning Center.`,
-    },
-  ],
-  projects: [
-    {
-      id: 7,
-      projectName: "Tabla",
-      url: "trifunovski.me/tabla",
-      description: `A web-based Kanban-style project management board.
-        Backend is written in Python, using the Flask web framework and MongoDB.
-        Frontend is written in JavaScript using the VueUI framework.`,
-    },
-    {
-      id: 11,
-      projectName: "OFCjs",
-      url: "trifunovski.me/ofcjs",
-      description: `A web open-face Chinese poker game that allows the user to play against another player.
-      The backend is written in JavaScript as a Node.js application, while the frontend uses the ReactUI framework.`,
-    },
-  ],
+  skills: [],
+  workHistory: [],
+  projects: [],
 };
 
-const getters = {};
+const getters = {
+  sortedEducation(state) {
+    const sorted = [...state.education].sort(
+      (x, y) => -x.dateFrom.localeCompare(y.dateFrom)
+    );
+    return sorted;
+  },
+  sortedWorkHistory(state) {
+    const sorted = [...state.workHistory].sort(
+      (x, y) => -x.dateFrom.localeCompare(y.dateFrom)
+    );
+    return sorted;
+  },
+  groupedSkills(state) {
+    const grouped = {};
+    for (const object of state.skills) {
+      const { category } = object;
+      if (grouped[category] !== undefined) {
+        grouped[category].push({ ...object });
+      } else {
+        grouped[category] = [{ ...object }];
+      }
+    }
+
+    const categories = Object.getOwnPropertyNames(grouped);
+    const sortedCategories = [...categories].sort((x, y) => x.localeCompare(y));
+
+    for (const category of sortedCategories) {
+      grouped[category] = [...grouped[category]].sort((x, y) =>
+        x.skill.localeCompare(y.skill)
+      );
+    }
+
+    return { sortedCategories, sortedSkills: grouped };
+  },
+};
 
 const actions = {
   // Biographical data actions
   getProfile({ commit }) {
     return doQuery(`
       profile {
-        firstName,
-        lastName,
-        email,
-        phoneNumber,
-        websiteUrl,
-        githubUrl,
-        linkedinUrl,
+        firstName, lastName, email, phoneNumber, websiteUrl,
+        githubUrl, linkedinUrl
       },
       addresses {
-        id,
-        lineOne,
-        lineTwo,
-        lineThree
+        id, lineOne, lineTwo, lineThree
       },
       education {
-        id,
-        school,
-        location,
-        degreeAndField,
-        gpa,
-        dateFrom,
-        dateTo,
-        description
+        id, school, location, degreeAndField, gpa, dateFrom,
+        dateTo, description
+      },
+      skills {
+        id, skill, category
+      },
+      workHistory {
+        id, company, position, location, dateFrom, dateTo, description
+      },
+      personalProjects {
+        id, projectName, url, description
       }
     `).then((res) => {
       commit("setBiographicalData", res.data.profile);
       commit("setAddresses", res.data.addresses);
       commit("setEducation", res.data.education);
+      commit("setSkills", res.data.skills);
+      commit("setWorkHistory", res.data.workHistory);
+      commit("setProjects", res.data.personalProjects);
     });
   },
   editBiographicalData({ commit }, biographicalData) {
@@ -107,8 +106,8 @@ const actions = {
       .then((res) => commit("addAddress", res.data.createAddress.address))
       .catch((err) => console.log(err));
   },
-  async editAddress({ commit }, {id, addressData}) {
-    console.log({id, addressData})
+  async editAddress({ commit }, { id, addressData }) {
+    console.log({ id, addressData });
     return doEditFromObject("address", id, addressData).then((res) =>
       commit("updateAddress", res.data.editAddress.address)
     );
@@ -120,16 +119,23 @@ const actions = {
   },
 
   // Education experience actions
-  createEducationExperience({ commit }, educationExperienceData) {
-    return doCreateFromObject("educationExperience", educationExperienceData).then((res) =>
+  createEducationExperience({ commit }, { educationExperienceData }) {
+    return doCreateFromObject(
+      "educationExperience",
+      educationExperienceData
+    ).then((res) =>
       commit(
         "addEducationExperience",
         res.data.createEducationExperience.educationExperience
       )
     );
   },
-  editEducationExperience({ commit }, {id, educationExperienceData}) {
-    return doEditFromObject("educationExperience", id, educationExperienceData).then((res) =>
+  editEducationExperience({ commit }, { id, educationExperienceData }) {
+    return doEditFromObject(
+      "educationExperience",
+      id,
+      educationExperienceData
+    ).then((res) =>
       commit(
         "updateEducationExperience",
         res.data.editEducationExperience.educationExperience
@@ -143,39 +149,92 @@ const actions = {
   },
 
   // Skills actions
+  async createSkill({ commit }, { skillData }) {
+    return doCreateFromObject("skill", skillData).then((res) =>
+      commit("addSkill", res.data.createSkill.skill)
+    );
+  },
+  async editSkill({ commit }, { id, skillData }) {
+    return doEditFromObject("skill", id, skillData).then((res) =>
+      commit("updateSkill", res.data.editSkill.skill)
+    );
+  },
+  async deleteSkill({ commit }, skillId) {
+    return doDelete("deleteSkill", skillId).then(() =>
+      commit("removeSkill", skillId)
+    );
+  },
 
   //
-  async createWorkExperience({ commit }, workExperience) {
-    commit("addWorkExperience", workExperience);
+  async createWorkExperience({ commit }, { workExperienceData }) {
+    return doCreateFromObject(
+      "workExperience",
+      workExperienceData
+    ).then((res) =>
+      commit("addWorkExperience", res.data.createWorkExperience.workExperience)
+    );
   },
-  async editWorkExperience({ commit }, workExperience) {
-    commit("updateWorkExperience", workExperience);
+  async editWorkExperience({ commit }, { id, workExperienceData }) {
+    return doEditFromObject(
+      "workExperience",
+      id,
+      workExperienceData
+    ).then((res) =>
+      commit("updateWorkExperience", res.data.editWorkExperience.workExperience)
+    );
   },
-  async deleteWorkExperience({ commit }, workID) {
-    commit("removeWorkExperience", workID);
+  async deleteWorkExperience({ commit }, workId) {
+    return doDelete("deleteWorkExperience", workId).then(() =>
+      commit("removeWorkExperience", workId)
+    );
   },
 
   //
-  async createPersonalProject({ commit }, personalProject) {
-    commit("addPersonalProject", personalProject);
+  async createPersonalProject({ commit }, { personalProjectData }) {
+    return doCreateFromObject(
+      "personalProject",
+      personalProjectData
+    ).then((res) =>
+      commit(
+        "addPersonalProject",
+        res.data.createPersonalProject.personalProject
+      )
+    );
   },
-  async editPersonalProject({ commit }, personalProject) {
-    commit("updatePersonalProject", personalProject);
+  async editPersonalProject({ commit }, { id, personalProjectData }) {
+    return doEditFromObject(
+      "personalProject",
+      id,
+      personalProjectData
+    ).then((res) =>
+      commit(
+        "updatePersonalProject",
+        res.data.editPersonalProject.personalProject
+      )
+    );
   },
-  async deletePersonalProject({ commit }, projectID) {
-    commit("removePersonalProject", projectID);
+  async deletePersonalProject({ commit }, projectId) {
+    return doDelete("deletePersonalProject", projectId).then(() =>
+      commit("removePersonalProject", projectId)
+    );
   },
 };
 
 const mutations = {
-  addAddress: (state, address) => state.addresses.unshift(address),
+  // Profile mutations
   setAddresses: (state, addresses) => (state.addresses = addresses),
   setEducation: (state, education) => (state.education = education),
+  setSkills: (state, skills) => (state.skills = skills),
+  setWorkHistory: (state, workHistory) => (state.workHistory = workHistory),
+  setProjects: (state, projects) => (state.projects = projects),
   setBiographicalData: (state, biographicalData) =>
     (state.biographicalData = {
       ...state.biographicalData,
       ...biographicalData,
     }),
+
+  // Address mutations
+  addAddress: (state, address) => state.addresses.unshift(address),
   updateAddress: (state, address) => {
     const idx = state.addresses.findIndex((x) => x.id === address.id);
     if (idx >= 0) {
@@ -184,6 +243,8 @@ const mutations = {
   },
   removeAddress: (state, addressId) =>
     (state.addresses = state.addresses.filter((x) => x.id !== addressId)),
+
+  // Education experience mutations
   addEducationExperience: (state, educationExperience) =>
     state.education.unshift(educationExperience),
   updateEducationExperience: (state, educationExperience) => {
@@ -196,6 +257,8 @@ const mutations = {
   },
   removeEducationExperience: (state, educationID) =>
     (state.education = state.education.filter((x) => x.id !== educationID)),
+
+  // Work experience mutations
   addWorkExperience: (state, workExperience) =>
     state.workHistory.unshift(workExperience),
   updateWorkExperience: (state, workExperience) => {
@@ -206,7 +269,19 @@ const mutations = {
   },
   removeWorkExperience: (state, workID) =>
     (state.workHistory = state.workHistory.filter((x) => x.id !== workID)),
-  //
+
+  // Skill mutations
+  addSkill: (state, skill) => state.skills.unshift(skill),
+  updateSkill: (state, skill) => {
+    const idx = state.skills.findIndex((x) => x.id === skill.id);
+    if (idx >= 0) {
+      state.skills.splice(idx, 1, skill);
+    }
+  },
+  removeSkill: (state, skillId) =>
+    (state.skills = state.skills.filter((x) => x.id !== skillId)),
+
+  // Personal project mutations
   addPersonalProject: (state, personalProject) =>
     state.projects.unshift(personalProject),
   updatePersonalProject: (state, personalProject) => {

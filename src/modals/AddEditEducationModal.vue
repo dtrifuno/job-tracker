@@ -96,7 +96,11 @@ export default {
     };
   },
   methods: {
-    ...mapActions(["createEducationExperience", "editEducationExperience"]),
+    ...mapActions([
+      "createEducationExperience",
+      "editEducationExperience",
+      "flashSuccess"
+    ]),
     extractDataToObject() {
       const data = {
         school: this.school,
@@ -122,8 +126,8 @@ export default {
         gpa: "",
         dateFrom: "",
         dateTo: "",
-        description: "",
-      }
+        description: ""
+      };
       this.setDataFromObject(clearData);
     },
     beforeOpen(event) {
@@ -133,17 +137,27 @@ export default {
         this.isUpdate = true;
       } else {
         this.clearFields();
-        this.isUpdate = false;
         this.id = null;
+        this.isUpdate = false;
       }
     },
     async onClickSubmit() {
-      const educationExperienceData = this.extractDataToObject();
-      this.createEducationExperience({educationExperienceData}).then(() => this.closeModal());
+      this.createEducationExperience({
+        educationExperienceData: this.extractDataToObject()
+      })
+        .then(() => {
+          this.closeModal();
+          this.flashSuccess("Educational experience sucessfully added.");
+        })
+        .catch(err => err);
     },
     async onClickEdit() {
-      const educationExperienceData = this.extractDataToObject();
-      this.editEducationExperience({id: this.id, educationExperienceData}).then(() => this.closeModal());
+      this.editEducationExperience({
+        id: this.id,
+        educationExperienceData: this.extractDataToObject()
+      })
+        .then(this.closeModal)
+        .catch(err => err);
     },
     closeModal() {
       this.$modal.hide("AddEditEducationModal");

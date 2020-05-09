@@ -11,4 +11,4 @@ class ModelClass(Model):
 db = SQLAlchemy(model_class=ModelClass)
 
 
-from .profile import User, Profile, Address, Education, WorkExperience  # noqa
+from .profile import User, Profile, Address, Education, Skill, WorkExperience, PersonalProject  # noqa

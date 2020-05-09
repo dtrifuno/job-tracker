@@ -18,8 +18,8 @@ const actions = {
     )
       .then((res) => {
         const token = res.data.login.token;
-        localStorage.setItem("token", token),
-          commit("setAuthentication", { username, token });
+        localStorage.setItem("token", token);
+        commit("setAuthentication", { username, token });
       })
       .catch((error) => console.log(error));
   },
@@ -33,8 +33,8 @@ const actions = {
       }`).then((res) => {
       const { username } = res.data.createUser.user;
       const token = res.data.createUser.token;
-      localStorage.setItem("token", token),
-        commit("setAuthentication", { username, token });
+      localStorage.setItem("token", token);
+      commit("setAuthentication", { username, token });
     });
   },
   logout({ commit }) {

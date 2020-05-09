@@ -59,38 +59,58 @@ export default {
     };
   },
   methods: {
-    ...mapActions(["createPersonalProject", "editPersonalProject"]),
+    ...mapActions([
+      "createPersonalProject",
+      "editPersonalProject",
+      "flashSuccess"
+    ]),
+    extractDataToObject() {
+      const data = {
+        projectName: this.projectName,
+        url: this.url,
+        description: this.description
+      };
+      return data;
+    },
+    setDataFromObject(data) {
+      for (const [field, value] of Object.entries(data)) {
+        this[field] = value;
+      }
+    },
+    clearFields() {
+      const clearData = {
+        projectName: "",
+        url: "",
+        description: ""
+      };
+      this.setDataFromObject(clearData);
+    },
     beforeOpen(event) {
       if (event.params && event.params.personalProject) {
-        ["projectName", "url", "description"].forEach(
-          field => (this[field] = event.params.personalProject[field])
-        );
+        this.setDataFromObject(event.params.personalProject);
         this.id = event.params.personalProject.id;
         this.isUpdate = true;
       } else {
-        ["projectName", "url", "description"].forEach(
-          field => (this[field] = "")
-        );
+        this.clearFields();
         this.id = null;
         this.isUpdate = false;
       }
     },
     async onClickSubmit() {
-      const personalProject = {
-        projectName: this.projectName,
-        url: this.url,
-        description: this.description
-      };
-      await this.createPersonalProject(personalProject);
+      this.createPersonalProject({
+        personalProjectData: this.extractDataToObject()
+      })
+        .then(() => {
+          this.closeModal();
+          this.flashSuccess("Personal project sucessfully added.");
+        })
+        .catch(err => err);
     },
     async onClickEdit() {
-      const personalProject = {
+      this.editPersonalProject({
         id: this.id,
-        projectName: this.projectName,
-        url: this.url,
-        description: this.description
-      };
-      await this.editPersonalProject(personalProject);
+        personalProjectData: this.extractDataToObject()
+      }).then(this.closeModal);
     },
     closeModal() {
       this.$modal.hide("AddEditPersonalProjectModal");

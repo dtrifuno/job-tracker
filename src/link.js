@@ -1,6 +1,6 @@
-import { createHttpLink } from "apollo-link-http";
 import { ApolloLink, concat, execute, makePromise } from "apollo-link";
 import { onError } from "apollo-link-error";
+import { createHttpLink } from "apollo-link-http";
 import gql from "graphql-tag";
 
 import store from "./store";
@@ -28,8 +28,8 @@ const logoutLink = onError(({ networkError, graphQLErrors }) => {
   }
 });
 
-//const link = logoutLink.concat(httpLink.concat(authMiddleware));
 const link = logoutLink.concat(concat(authMiddleware, httpLink));
+
 const executeString = (query, variables) => {
   console.log(query);
   const operation = {
@@ -77,6 +77,8 @@ const objectToArgsString = (object) => {
   );
 };
 
+
+// FIXME: extend to deeper queries
 const objectToQueryString = (object) => {
   return Object.entries(object)
     .map((x) => `${x[0]}`)
