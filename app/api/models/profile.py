@@ -116,7 +116,7 @@ def is_year_month(value):
 class Education(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     school = db.Column(db.String(50), nullable=False)
-    location = db.Column(db.String(50))
+    location = db.Column(db.String(50), nullable=False)
     degree_and_field = db.Column(db.String(50))
     date_from = db.Column(db.String(7), nullable=False)
     date_to = db.Column(db.String(7))
@@ -130,6 +130,12 @@ class Education(db.Model):
     def validate_school(self, key, value):
         if value.strip() == '':
             raise ValueError("School is a required field.")
+        return value
+
+    @validates("location")
+    def validate_location(self, key, value):
+        if value.strip() == '':
+            raise ValueError("Location is a required field.")
         return value
 
     @validates("date_from")
@@ -183,6 +189,12 @@ class WorkExperience(db.Model):
     def validate_company(self, key, value):
         if value.strip() == '':
             raise ValueError("Company is a required field.")
+        return value
+
+    @validates("location")
+    def validate_location(self, key, value):
+        if value.strip() == '':
+            raise ValueError("Location is a required field.")
         return value
 
     @validates("position")

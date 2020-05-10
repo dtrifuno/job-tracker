@@ -31,7 +31,7 @@
               <button
                 type="submit"
                 class="btn btn-primary ml-auto"
-                @click="isUpdate ? onClickEdit() : onClickSubmit()"
+                @click.prevent="isUpdate ? onClickEdit() : onClickSubmit()"
               >Submit</button>
             </div>
           </form>

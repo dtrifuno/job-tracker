@@ -36,14 +36,14 @@
           <td>{{ job.company }}</td>
           <td>{{ job.position }}</td>
           <td>{{ job.location }}</td>
-          <td>{{ job.status }}</td>
-          <td>{{ job.date_updated }}</td>
-          <td>{{ job.date_created }}</td>
+          <td>{{ statusCodeToMsg(job.status) }}</td>
+          <td>{{ new Date(job.dateUpdated).toLocaleDateString() }}</td>
+          <td>{{ new Date(job.dateCreated).toLocaleDateString() }}</td>
           <td>
             <button
               type="button"
               class="btn btn-sm btn-outline-danger"
-              @click="showDeleteModal(job)"
+              @click.stop="() => showDeleteModal(job)"
             >
               <i class="fas fa-trash-alt" aria-hidden="true" />
             </button>
@@ -56,6 +56,7 @@
 
 <script>
 import { mapActions, mapGetters, mapMutations } from "vuex";
+import { statusCodeToMsg } from "@/utils";
 
 export default {
   name: "Jobs",
@@ -69,6 +70,7 @@ export default {
     ...mapGetters(["filteredJobs"])
   },
   methods: {
+    statusCodeToMsg,
     ...mapActions(["fetchJobs", "deleteJob"]),
     ...mapMutations(["updateJobSearchString"]),
     showAddJobModal() {

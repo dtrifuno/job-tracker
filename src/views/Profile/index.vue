@@ -49,8 +49,8 @@
 
     <div class="card row">
       <CardTitle title="Addresses" :onClick="showAddAddressModal" />
-      <div class="card-body">
-        <div class="list-group">
+      <div class="container">
+        <div class="list-group" :class="{ 'my-2' : addresses.length > 0}">
           <div v-for="address in addresses" v-bind:key="address.id" class="list-group-item">
             <div class="float-left py-2">{{ addressToString(address) }}</div>
             <div class="float-right">
@@ -97,8 +97,11 @@
 
     <div class="card row">
       <CardTitle title="Skills" :onClick="showAddSkillModal" />
-      <div class="card-body">
-        <table class="table table-bordered table-sm">
+      <div class="container">
+        <table
+          class="table table-bordered table-sm my-2"
+          v-if="groupedSkills.sortedCategories.length > 0"
+        >
           <thead>
             <th style="width: 14%" scope="col">Category</th>
             <th style="width: 86%" scope="col">Skills</th>

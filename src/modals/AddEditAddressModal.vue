@@ -92,7 +92,7 @@ export default {
     async onClickSubmit() {
       this.createAddress({ addressData: this.extractDataToObject() })
         .then(() => {
-          this.closeModal;
+          this.closeModal();
           this.flashSuccess("Address sucessfully added.");
         })
         .catch(err => err);

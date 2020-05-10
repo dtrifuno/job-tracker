@@ -1,8 +1,8 @@
 import {
   doQuery,
   doCreateFromObject,
-  doDelete,
   doEditFromObject,
+  doDelete,
 } from "@/link";
 
 const state = {
@@ -101,8 +101,8 @@ const actions = {
   },
 
   // Address actions
-  async createAddress({ commit }, addressData) {
-    return doCreateFromObject("address", addressData)
+  async createAddress({ commit }, { addressData }) {
+    return doCreateFromObject("address", addressData )
       .then((res) => commit("addAddress", res.data.createAddress.address))
       .catch((err) => console.log(err));
   },

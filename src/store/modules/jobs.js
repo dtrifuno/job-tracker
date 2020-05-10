@@ -1,4 +1,4 @@
-/* eslint-disable */
+import { doQuery, doDelete, executeString } from "@/link";
 
 const state = {
   jobs: [],
@@ -25,52 +25,34 @@ const getters = {
 
 const actions = {
   async fetchJobs({ commit }) {
-    const response = [
-      {
-        id: 1,
-        company: "McDonalds",
-        position: "Clown",
-        location: "Remote",
-        status: "Rejected",
-        date_updated: "April 3, 2020",
-        date_created: "April 3, 2020",
-      },
-      {
-        id: 2,
-        company: "Cryptids Inc.",
-        position: "Bigfoot Hunter",
-        location: "Chicago, IL",
-        status: "Interview Scheduled",
-        date_created: "April 13, 2020",
-        date_updated: "April 23, 2020",
-      },
-      {
-        id: 3,
-        company: "TSM",
-        position: "TFT Pro",
-        location: "Los Angeles, CA",
-        status: "Offer Made",
-        date_created: "April 11, 2020",
-        date_updated: "April 25, 2020",
-      },
-      {
-        id: 4,
-        company: "North Macedonian Government",
-        position: "Witch Doctor Apprentice",
-        location: "Skopje",
-        status: "Rejected",
-        date_created: "April 6, 2020",
-        date_updated: "April 9, 2020",
-      },
-    ];
-    commit("setJobs", response);
+    return doQuery(`
+      jobs {
+        id, company, position, location, status, dateCreated, dateUpdated
+      }
+    `).then((res) => {
+      commit("setJobs", res.data.jobs);
+    });
   },
-  async createJob({ commit }, job) {
-    commit("addJob", job);
+  getJob({ commit }, jobId) {
+    return doQuery(`job(id: "${jobId}") {
+        id, company, position, location, url, description, coverLetter
+    }`)
+      .then((res) => console.log(res))
+      .catch(() => commit("setJobs", {}));
   },
-  async updateJob({ commit }, job) {},
-  async deleteJob({ commit }, jobID) {
-    commit("removeJob", jobID);
+  async createJob({ commit }, { date, jobData }) {
+    return executeString(
+      `mutation CreateJob($date: String!, $jobData: JobInput!) {
+        createJob(date: $date, jobData: $jobData) {
+          job { id, company, position, location, status, dateCreated, dateUpdated }
+        }
+    }`,
+      { jobData, date }
+    ).then((res) => commit("addJob", res.data.createJob.job));
+  },
+  //  async updateJob({ commit }, job) {},
+  async deleteJob({ commit }, jobId) {
+    return doDelete("deleteJob", jobId).then(() => commit("removeJob", jobId));
   },
 };
 

@@ -1,5 +1,5 @@
 <template>
-  <modal name="AddJobModal" v-bind="modalProps">
+  <modal name="AddJobModal" @before-open="beforeOpen" v-bind="modalProps">
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title">Add Job</h5>
@@ -45,7 +45,11 @@
               <small class="form-text text-muted">Use Markdown</small>
             </div>
             <div class="row">
-              <button type="submit" class="btn btn-primary ml-auto" @click="onClickSubmit()">Submit</button>
+              <button
+                type="submit"
+                class="btn btn-primary ml-auto"
+                @click.prevent="onClickSubmit()"
+              >Submit</button>
             </div>
           </form>
         </div>
@@ -73,15 +77,39 @@ export default {
   },
   methods: {
     ...mapActions(["createJob"]),
-    onClickSubmit() {
-      const job = {
+    extractDataToObject() {
+      const data = {
         position: this.position,
         company: this.company,
         location: this.location,
         url: this.url,
         description: this.description
       };
-      this.createJob(job);
+      return data;
+    },
+    setDataFromObject(data) {
+      for (const [field, value] of Object.entries(data)) {
+        this[field] = value;
+      }
+    },
+    clearFields() {
+      const clearFields = {
+        position: "",
+        company: "",
+        location: "",
+        url: "",
+        description: ""
+      };
+      this.setDataFromObject(clearFields);
+    },
+    beforeOpen() {
+      this.clearFields();
+    },
+    onClickSubmit() {
+      this.createJob({
+        date: (new Date()).toISOString().split("T")[0],
+        jobData: this.extractDataToObject()
+      });
     },
     closeModal() {
       this.$modal.hide("AddJobModal");

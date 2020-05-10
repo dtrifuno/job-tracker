@@ -1,4 +1,4 @@
-import { doMutation } from "@/link";
+import { executeString } from "@/link";
 
 const state = {
   username: null,
@@ -11,10 +11,10 @@ const getters = {};
 
 const actions = {
   login({ commit }, { username, password }) {
-    return doMutation(
-      `login(username: "${username}", password: "${password}") {
+    return executeString(
+      `mutation { login(username: "${username}", password: "${password}") {
           token
-      }`
+      }}`
     )
       .then((res) => {
         const token = res.data.login.token;
@@ -24,13 +24,13 @@ const actions = {
       .catch((error) => console.log(error));
   },
   createUser({ commit }, { username, password }) {
-    return doMutation(`
+    return executeString(`
       createUser(username: "${username}", password: "${password}") {
         user {
           username
         },
         token
-      }`).then((res) => {
+      }}`).then((res) => {
       const { username } = res.data.createUser.user;
       const token = res.data.createUser.token;
       localStorage.setItem("token", token);

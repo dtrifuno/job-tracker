@@ -21,3 +21,22 @@ export const renderMonth = (dateValue) => {
   };
   return `${numToAbbreviatedMonth[monthValue]} ${yearValue}`;
 };
+
+export const statusCodeToMsg = (statusCode) => {
+  const statusCodeToMsgDict = {
+    "JobAdded": "Job Added",
+    "Note": "Note",
+    "ApplicationSubmitted": "Application Submitted",
+    "ScreeningScheduled": "Screening Scheduled",
+    "ScreeningCompleted": "Screening Completed",
+    "AssessmentScheduled": "Assessment Scheduled",
+    "AssessmentCompleted": "Assessment Completed",
+    "InterviewScheduled": "Interview Scheduled",
+    "InterviewCompleted": "Interview Completed",
+    "Rejected":" Rejected",
+    "OfferMade": "Offer Made",
+    "OfferAccepted": "Offer Accepted",
+    "OfferRejected": "Offer Rejected",
+  }
+  return statusCodeToMsgDict[statusCode]
+}

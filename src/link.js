@@ -30,7 +30,7 @@ const logoutLink = onError(({ networkError, graphQLErrors }) => {
 
 const link = logoutLink.concat(concat(authMiddleware, httpLink));
 
-const executeString = (query, variables) => {
+export const executeString = (query, variables = {}) => {
   console.log(query);
   const operation = {
     query: gql`
@@ -57,47 +57,11 @@ export const doQuery = (queryString, variables = {}) => {
   );
 };
 
-export const doMutation = (mutationString, variables = {}) => {
-  return executeString(
-    `mutation {
-    ${mutationString}
-  }`,
-    variables
-  );
-};
-
-const objectToArgsString = (object) => {
-  return (
-    Object.entries(object)
-      .map((x) => `${x[0]}: $${x[0]}`)
-      //      ([field, value]) => `${field}: $${field}`
-      //        `${field}: ${typeof value === "string" ? `"${value.replace(/(\r\n|\r|\n)/, "\\n")}"` : `${value}`}`
-      //    )
-      .join(",\n")
-  );
-};
-
-
 // FIXME: extend to deeper queries
 const objectToQueryString = (object) => {
   return Object.entries(object)
     .map((x) => `${x[0]}`)
     .join(",\n");
-};
-
-export const doMutationFromObject = (
-  mutationName,
-  mutationObject,
-  queryName,
-  queryObject
-) => {
-  return executeString(
-    `mutation ${mutationName}() {
-       ${mutationName}(${objectToArgsString(mutationObject)}) {
-       ${queryName} { ${objectToQueryString(queryObject)} }
-    }}`,
-    mutationObject
-  );
 };
 
 export const doCreateFromObject = (objectName, mutationObject) => {
@@ -131,7 +95,10 @@ export const doEditFromObject = (objectName, id, mutationObject) => {
 };
 
 export const doDelete = (mutationName, id) => {
-  return doMutation(`${mutationName}(id: "${id}") { ok }`);
+  return executeString(
+    `mutation {
+      ${mutationName}(id: "${id}") { ok }
+    }`)
 };
 
 export default doQuery;
