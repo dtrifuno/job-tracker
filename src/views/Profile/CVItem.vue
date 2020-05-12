@@ -1,5 +1,5 @@
 <template>
-  <div class="card my-2">
+  <div class="card item my-2" @click="onClick">
     <div class="card-body mx-2">
       <div>
         <h5 class="mb-0 float-left">{{ heading }}</h5>
@@ -12,26 +12,8 @@
         <br />
       </div>
       <ul class="mb-0 pl-4" v-if="bullets">
-        <li v-for="(bullet, idx) in bullets" v-bind:key="idx">{{bullet}}</li>
+        <li v-for="(bullet, idx) in bullets" v-bind:key="idx">{{ bullet }}</li>
       </ul>
-      <div class="float-right">
-        <button
-          type="button"
-          class="btn btn-outline-success btn-sm mx-1"
-          v-if="onEdit"
-          @click="onEdit"
-        >
-          <i class="fas fa-edit" aria-hidden="true" />
-        </button>
-        <button
-          type="button"
-          class="btn btn-outline-danger btn-sm"
-          v-if="onDelete"
-          @click="onDelete"
-        >
-          <i class="fas fa-trash-alt" aria-hidden="true" />
-        </button>
-      </div>
     </div>
   </div>
 </template>
@@ -45,11 +27,18 @@ export default {
     subheading: String,
     subheadingRight: String,
     bullets: Array,
-    onDelete: Function,
-    onEdit: Function
+    onClick: Function
   }
 };
 </script>
 
-<style>
+<style scoped>
+.item {
+  cursor: pointer;
+  transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out, -webkit-box-shadow 0.15s ease-in-out;
+}
+
+.item:hover {
+  background-color: #ececec;
+}
 </style>

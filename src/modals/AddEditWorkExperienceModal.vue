@@ -47,11 +47,20 @@
               <small class="form-text text-muted">Use line breaks to create bullet points.</small>
             </div>
             <div class="row">
-              <button
-                type="submit"
-                class="btn btn-primary ml-auto"
-                @click.prevent="isUpdate ? onClickEdit() : onClickSubmit()"
-              >Submit</button>
+              <div class="ml-auto">
+                <button
+                  type="submit"
+                  class="btn btn-primary mx-3"
+                  @click.prevent="isUpdate ? onClickEdit() : onClickSubmit()"
+                  :disabled="isLoading"
+                >Submit</button>
+                <button
+                  class="btn btn-primary"
+                  v-if="isUpdate"
+                  @click.prevent="onClickDelete"
+                  :disabled="isLoading"
+                >Delete</button>
+              </div>
             </div>
           </form>
         </div>
@@ -61,7 +70,7 @@
 </template>
 
 <script>
-import { mapActions } from "vuex";
+import { mapActions, mapMutations, mapState } from "vuex";
 
 import modalProps from "./modalProps";
 
@@ -80,12 +89,19 @@ export default {
       modalProps
     };
   },
+  computed: {
+    ...mapState({
+      isLoading: state => state.spinners.profile.isLoadingWorkHistory
+    }),
+  },
   methods: {
     ...mapActions([
       "createWorkExperience",
       "editWorkExperience",
+      "deleteWorkExperience",
       "flashSuccess"
     ]),
+    ...mapMutations(["toggleLoadingWorkHistory"]),
     extractDataToObject() {
       const data = {
         position: this.position,
@@ -124,23 +140,40 @@ export default {
         this.id = null;
       }
     },
-    async onClickSubmit() {
-      await this.createWorkExperience({
+    onClickSubmit() {
+      this.toggleLoadingWorkHistory();
+      this.createWorkExperience({
         workExperienceData: this.extractDataToObject()
       })
         .then(() => {
           this.closeModal();
           this.flashSuccess("Work experience sucessfully added.");
         })
-        .catch(err => err);
+        .catch(err => err)
+        .finally(this.toggleLoadingWorkHistory);
     },
-    async onClickEdit() {
-      await this.editWorkExperience({
+    onClickEdit() {
+      this.toggleLoadingWorkHistory();
+      this.editWorkExperience({
         id: this.id,
         workExperienceData: this.extractDataToObject()
       })
-        .then(this.closeModal)
-        .catch(err => err);
+        .then(() => {
+          this.closeModal();
+          this.flashSuccess("Changes successfully saved.");
+        })
+        .catch(err => err)
+        .finally(this.toggleLoadingWorkHistory);
+    },
+    onClickDelete() {
+      this.toggleLoadingWorkHistory();
+      this.deleteWorkExperience(this.id)
+        .then(() => {
+          this.closeModal();
+          this.flashSuccess("Work experience successfully deleted.");
+        })
+        .catch(err => err)
+        .finally(this.toggleLoadingWorkHistory);
     },
     closeModal() {
       this.$modal.hide("AddEditWorkExperienceModal");

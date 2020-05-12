@@ -28,8 +28,14 @@
                   type="submit"
                   class="btn btn-primary mx-3"
                   @click.prevent="isUpdate ? onClickEdit() : onClickSubmit()"
+                  :disabled="isLoading"
                 >Submit</button>
-                <button v-if="isUpdate" class="btn btn-primary" @click.prevent="onClickDelete">Delete</button>
+                <button
+                  v-if="isUpdate"
+                  class="btn btn-primary"
+                  @click.prevent="onClickDelete"
+                  :disabled="isLoading"
+                >Delete</button>
               </div>
             </div>
           </form>
@@ -40,7 +46,7 @@
 </template>
 
 <script>
-import { mapActions } from "vuex";
+import { mapActions, mapMutations, mapState } from "vuex";
 
 import modalProps from "./modalProps";
 
@@ -55,8 +61,14 @@ export default {
       modalProps
     };
   },
+  computed: {
+    ...mapState({
+      isLoading: state => state.spinners.profile.isLoadingSkills
+    })
+  },
   methods: {
-    ...mapActions(["createSkill", "editSkill", "deleteSkill"]),
+    ...mapActions(["createSkill", "editSkill", "deleteSkill", "flashSuccess"]),
+    ...mapMutations(["toggleLoadingSkills"]),
     extractDataToObject() {
       const data = {
         category: this.category,
@@ -88,24 +100,39 @@ export default {
       }
     },
     onClickSubmit() {
+      this.toggleLoadingSkills();
       this.createSkill({
         skillData: this.extractDataToObject()
       })
-        .then(this.closeModal)
-        .catch(err => err);
+        .then(() => {
+          this.closeModal();
+          this.flashSuccess("Skill successfully added.");
+        })
+        .catch(err => err)
+        .finally(this.toggleLoadingSkills);
     },
     onClickEdit() {
+      this.toggleLoadingSkills();
       this.editSkill({
         id: this.id,
         skillData: this.extractDataToObject()
       })
-        .then(this.closeModal)
-        .catch(err => err);
+        .then(() => {
+          this.closeModal();
+          this.flashSuccess("Changes successfully saved.");
+        })
+        .catch(err => err)
+        .finally(this.toggleLoadingSkills);
     },
     onClickDelete() {
+      this.toggleLoadingSkills();
       this.deleteSkill(this.id)
-        .then(this.closeModal)
-        .catch(err => err);
+        .then(() => {
+          this.closeModal();
+          this.flashSuccess("Skill successfully deleted.");
+        })
+        .catch(err => err)
+        .finally(this.toggleLoadingSkills);
     },
     closeModal() {
       this.$modal.hide("AddEditSkillModal");

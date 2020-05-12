@@ -112,24 +112,27 @@ class Query(graphene.ObjectType):
         user = get_user()
         return user.personal_projects
 
+class BiographicalDataInput(graphene.InputObjectType):
+    first_name = graphene.String()
+    last_name = graphene.String()
+    email = graphene.String()
+    phone_number = graphene.String()
+    website_url = graphene.String()
+    github_url = graphene.String()
+    linkedin_url = graphene.String()
+
 
 class EditBiographicalData(graphene.Mutation):
     class Arguments:
-        first_name = graphene.String()
-        last_name = graphene.String()
-        email = graphene.String()
-        phone_number = graphene.String()
-        website_url = graphene.String()
-        github_url = graphene.String()
-        linkedin_url = graphene.String()
+        biographical_data_data = BiographicalDataInput(required=True)
 
     profile = graphene.Field(ProfileType)
 
     @mutation_header_jwt_required
-    def mutate(root, info, **kwargs):
+    def mutate(root, info, biographical_data_data):
         user = get_user()
-        profile = ProfileModel.query.filter_by(user=user).first()
-        profile.update(kwargs)
+        profile = user.profile
+        profile.update(biographical_data_data)
         db.session.commit()
         return EditBiographicalData(profile=profile)
 

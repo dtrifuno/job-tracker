@@ -6,10 +6,9 @@ basedir = os.path.abspath(os.path.dirname(__file__))
 class Config:
     SECRET_KEY = os.environ.get('SECRET_KEY')
     JWT_SECRET_KEY = os.environ.get('JWT_SECRET_KEY')
-    REFRESH_EXP_LENGTH = 300
-    ACCESS_EXP_LENGTH = 100
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
+    JWT_ACCESS_TOKEN_EXPIRES = 120
     JWT_HEADER_NAME = "Authorization"
     JWT_HEADER_TOKEN_PREFIX = "Bearer"
 

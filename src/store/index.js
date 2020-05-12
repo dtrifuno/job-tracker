@@ -6,6 +6,7 @@ import jobDetails from "./modules/jobDetails";
 import jobs from "./modules/jobs";
 import notifications from "./modules/notifications";
 import profile from "./modules/profile";
+import spinners from "./modules/spinners";
 
 Vue.use(Vuex);
 
@@ -16,5 +17,6 @@ export default new Vuex.Store({
     jobs,
     notifications,
     profile,
+    spinners
   },
 });

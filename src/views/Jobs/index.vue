@@ -8,14 +8,14 @@
         class="form-control"
         id="searchTableInput"
         v-model="searchString"
-        v-on:keyup="onSearchStringChange"
         placeholder="Search table..."
       />
       <div class="input-group-append">
         <button class="btn btn-primary btn-sm" @click="showAddJobModal">Add Job</button>
       </div>
     </div>
-    <table class="table table-hover table-striped table-sm table-responsive-md">
+    <Spinner v-if="isLoading"/>
+    <table v-else class="table table-hover table-striped table-sm table-responsive-md">
       <thead class="thead-dark">
         <tr>
           <th scope="col">Company</th>
@@ -24,7 +24,7 @@
           <th scope="col">Status</th>
           <th scope="col">Updated</th>
           <th scope="col">Created</th>
-          <th scope="col"></th>
+          <th style="width: 5%" scope="col"></th>
         </tr>
       </thead>
       <tbody>
@@ -42,7 +42,7 @@
           <td>
             <button
               type="button"
-              class="btn btn-sm btn-outline-danger"
+              class="btn btn-sm btn-outline-primary"
               @click.stop="() => showDeleteModal(job)"
             >
               <i class="fas fa-trash-alt" aria-hidden="true" />
@@ -55,29 +55,34 @@
 </template>
 
 <script>
-import { mapActions, mapGetters, mapMutations } from "vuex";
-import { statusCodeToMsg } from "@/utils";
+import { mapActions, mapGetters, mapMutations, mapState } from "vuex";
+import { statusCodeToMsg, debounce } from "@/utils";
+
+import Spinner from "@/components/Spinner";
 
 export default {
   name: "Jobs",
-  components: {},
+  components: { Spinner },
   data() {
     return {
       searchString: ""
     };
   },
   computed: {
-    ...mapGetters(["filteredJobs"])
+    ...mapGetters(["filteredJobs"]),
+    ...mapState({ isLoading: state => state.spinners.isLoadingJobs })
+  },
+  watch: {
+    searchString: debounce(function(newVal) {
+      this.updateJobSearchString(newVal);
+    }, 500)
   },
   methods: {
     statusCodeToMsg,
     ...mapActions(["fetchJobs", "deleteJob"]),
-    ...mapMutations(["updateJobSearchString"]),
+    ...mapMutations(["updateJobSearchString", "toggleLoadingJobs"]),
     showAddJobModal() {
       this.$modal.show("AddJobModal");
-    },
-    onSearchStringChange() {
-      this.updateJobSearchString(this.searchString);
     },
     showDeleteModal(job) {
       this.$modal.show("DeleteModal", {
@@ -87,8 +92,9 @@ export default {
       });
     }
   },
-  async created() {
-    await this.fetchJobs();
+  created() {
+    this.toggleLoadingJobs();
+    this.fetchJobs().finally(this.toggleLoadingJobs);
   }
 };
 </script>

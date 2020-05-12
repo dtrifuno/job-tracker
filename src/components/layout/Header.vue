@@ -46,15 +46,6 @@
           </li>
           <li class="nav-item" v-if="isAuthenticated">
             <router-link
-              to="/stats"
-              class="nav-link"
-              exact
-              active-class="active"
-              >Stats</router-link
-            >
-          </li>
-          <li class="nav-item" v-if="isAuthenticated">
-            <router-link
               to="/profile"
               class="nav-link"
               exact

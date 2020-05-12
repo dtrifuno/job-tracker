@@ -3,10 +3,10 @@ import re
 import string
 
 from sqlalchemy.orm import validates
-import validators
 from werkzeug.security import check_password_hash, generate_password_hash
 
-from . import db
+from app.api import validators
+from app.api.models import db
 
 
 class User(db.Model):
@@ -25,7 +25,7 @@ class User(db.Model):
             raise ValueError(
                 "Username must be between 6 and 20 characters in length.")
         if self.query.filter_by(username=value).first():
-            raise ValueError("Username already token.")
+            raise ValueError("Username already taken.")
         return value
 
     @property
@@ -62,35 +62,19 @@ class Profile(db.Model):
 
     @validates('email')
     def validate_email(self, key, value):
-        if value.strip() == '':
-            return ''
-        elif not validators.email(value):
-            raise ValueError(f"{value} is not a valid email address.")
-        return value
+        return validators.is_email(key, value)
 
     @validates('website_url')
     def validate_website_url(self, key, value):
-        if value.strip() == '':
-            return ''
-        elif not validators.url(value):
-            raise ValueError(f"{value} is not a valid URL.")
-        return value
+        return validators.is_url(key, value)
 
     @validates('github_url')
     def validate_github_url(self, key, value):
-        if value.strip() == '':
-            return ''
-        elif not re.match(r"^https?://(www.)?github.com/[a-zA-Z0-9\-]{1,39}$", value):
-            raise ValueError(f"{value} is not a valid Github URL.")
-        return value
+        return validators.is_github_url(key, value)
 
     @validates('linkedin_url')
     def validate_linkedin_url(self, key, value):
-        if value.strip() == '':
-            return ''
-        elif not re.match(r"^https?://(www.)?linkedin.com/in/[a-zA-Z0-9\-]{1,39}/$", value):
-            raise ValueError(f"{value} is not a valid LinkedIn URL.")
-        return value
+        return validators.is_linkedin_url(key, value)
 
 
 class Address(db.Model):
@@ -104,13 +88,7 @@ class Address(db.Model):
 
     @validates("line_one")
     def validate_line_one(self, key, value):
-        if value.strip() == '':
-            raise ValueError("Line One is a required field.")
-        return value
-
-
-def is_year_month(value):
-    return bool(re.match(r"^\d{4}-\d{2}$", value))
+        return validators.is_string(key, value, strip=True, required=True)
 
 
 class Education(db.Model):
@@ -128,33 +106,23 @@ class Education(db.Model):
 
     @validates("school")
     def validate_school(self, key, value):
-        if value.strip() == '':
-            raise ValueError("School is a required field.")
-        return value
+        return validators.is_string(key, value, strip=True, required=True)
 
     @validates("location")
     def validate_location(self, key, value):
-        if value.strip() == '':
-            raise ValueError("Location is a required field.")
-        return value
+        return validators.is_string(key, value, strip=True, required=True)
 
     @validates("date_from")
     def validate_date_from(self, key, value):
-        if value.strip() == '':
-            raise ValueError("Date From is a required field.")
-        elif not is_year_month(value):
-            raise ValueError(f"{value} is not a valid yyyy-mm string.")
-        return value
+        return validators.is_year_month(key, value, required=True)
 
     @validates("date_to")
     def validate_date_to(self, key, value):
-        if value.strip() and not is_year_month(value):
-            raise ValueError(f"{value} is not a valid yyyy-mm string.")
-        return value
+        return validators.is_year_month(key, value)
 
     @validates("description")
     def validate_description(self, key, value):
-        return re.sub(r"\n+", "\n", value.strip())
+        return validators.is_string(key, value, strip=True, dedupe_linebreaks=True)
 
 
 class Skill(db.Model):
@@ -167,9 +135,11 @@ class Skill(db.Model):
 
     @validates("skill")
     def validate_skill(self, key, value):
-        if value.strip() == '':
-            raise ValueError("Skill is a required field.")
-        return value
+        return validators.is_string(key, value, strip=True, required=True)
+
+    @validates("category")
+    def validate_category(self, key, value):
+        return validators.is_string(key, value, strip=True, title_case=True, required=True)
 
 
 class WorkExperience(db.Model):
@@ -187,39 +157,27 @@ class WorkExperience(db.Model):
 
     @validates("company")
     def validate_company(self, key, value):
-        if value.strip() == '':
-            raise ValueError("Company is a required field.")
-        return value
+        return validators.is_string(key, value, strip=True, required=True)
 
     @validates("location")
     def validate_location(self, key, value):
-        if value.strip() == '':
-            raise ValueError("Location is a required field.")
-        return value
+        return validators.is_string(key, value, strip=True, required=True)
 
     @validates("position")
     def validate_position(self, key, value):
-        if value.strip() == '':
-            raise ValueError("Position is a required field.")
-        return value
+        return validators.is_string(key, value, strip=True, required=True)
 
     @validates("date_from")
     def validate_date_from(self, key, value):
-        if value.strip() == '':
-            raise ValueError("Date From is a required field.")
-        elif not is_year_month(value):
-            raise ValueError(f"{value} is not a valid yyyy-mm string.")
-        return value
+        return validators.is_year_month(key, value, required=True)
 
     @validates("date_to")
     def validate_date_to(self, key, value):
-        if value.strip() and not is_year_month(value):
-            raise ValueError(f"{value} is not a valid yyyy-mm string.")
-        return value
+        return validators.is_year_month(key, value)
 
     @validates("description")
     def validate_description(self, key, value):
-        return re.sub(r"\n+", "\n", value.strip())
+        return validators.is_string(key, value, strip=True, dedupe_linebreaks=True)
 
 
 class PersonalProject(db.Model):
@@ -229,22 +187,17 @@ class PersonalProject(db.Model):
     description = db.Column(db.Text())
 
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    user = db.relationship('User', backref=db.backref('personal_projects', lazy=True))
+    user = db.relationship('User', backref=db.backref(
+        'personal_projects', lazy=True))
 
     @validates("project_name")
     def validate_project_name(self, key, value):
-        if value.strip() == '':
-            raise ValueError("Project Name is a required field.")
-        return value
+        return validators.is_string(key, value, strip=True, required=True)
 
     @validates('url')
     def validate_url(self, key, value):
-        if value.strip() == '':
-            return ''
-        elif not validators.url(value):
-            raise ValueError(f"{value} is not a valid URL.")
-        return value
+        return validators.is_url(key, value)
 
     @validates("description")
     def validate_description(self, key, value):
-        return re.sub(r"\n+", "\n", value.strip())
+        return validators.is_string(key, value, strip=True, dedupe_linebreaks=True)

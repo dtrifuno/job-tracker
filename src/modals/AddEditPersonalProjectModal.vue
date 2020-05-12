@@ -28,11 +28,20 @@
               <small class="form-text text-muted">Use line breaks to create bullet points.</small>
             </div>
             <div class="row">
-              <button
-                type="submit"
-                class="btn btn-primary ml-auto"
-                @click.prevent="isUpdate ? onClickEdit() : onClickSubmit()"
-              >Submit</button>
+              <div class="ml-auto">
+                <button
+                  type="submit"
+                  class="btn btn-primary mx-3"
+                  @click.prevent="isUpdate ? onClickEdit() : onClickSubmit()"
+                  :disabled="isLoading"
+                >Submit</button>
+                <button
+                  class="btn btn-primary"
+                  v-if="isUpdate"
+                  @click.prevent="onClickDelete"
+                  :disabled="isLoading"
+                >Delete</button>
+              </div>
             </div>
           </form>
         </div>
@@ -42,7 +51,7 @@
 </template>
 
 <script>
-import { mapActions } from "vuex";
+import { mapActions, mapMutations, mapState } from "vuex";
 
 import modalProps from "./modalProps";
 
@@ -58,12 +67,19 @@ export default {
       modalProps
     };
   },
+  computed: {
+    ...mapState({
+      isLoading: state => state.spinners.profile.isLoadingPersonalProjects
+    })
+  },
   methods: {
     ...mapActions([
       "createPersonalProject",
       "editPersonalProject",
+      "deletePersonalProject",
       "flashSuccess"
     ]),
+    ...mapMutations(["toggleLoadingPersonalProjects"]),
     extractDataToObject() {
       const data = {
         projectName: this.projectName,
@@ -96,7 +112,8 @@ export default {
         this.isUpdate = false;
       }
     },
-    async onClickSubmit() {
+    onClickSubmit() {
+      this.toggleLoadingPersonalProjects();
       this.createPersonalProject({
         personalProjectData: this.extractDataToObject()
       })
@@ -104,13 +121,31 @@ export default {
           this.closeModal();
           this.flashSuccess("Personal project sucessfully added.");
         })
-        .catch(err => err);
+        .catch(err => err)
+        .finally(this.toggleLoadingPersonalProjects);
     },
-    async onClickEdit() {
+    onClickEdit() {
+      this.toggleLoadingPersonalProjects();
       this.editPersonalProject({
         id: this.id,
         personalProjectData: this.extractDataToObject()
-      }).then(this.closeModal);
+      })
+        .then(() => {
+          this.closeModal();
+          this.flashSuccess("Changes successfully saved.");
+        })
+        .catch(err => err)
+        .finally(this.toggleLoadingPersonalProjects);
+    },
+    onClickDelete() {
+      this.toggleLoadingPersonalProjects();
+      this.deletePersonalProject(this.id)
+        .then(() => {
+          this.closeModal();
+          this.flashSuccess("Personal project successfully deleted.");
+        })
+        .catch(err => err)
+        .finally(this.toggleLoadingPersonalProjects);
     },
     closeModal() {
       this.$modal.hide("AddEditPersonalProjectModal");

@@ -1,14 +1,10 @@
-import datetime
 import functools
-import re
-import string
 
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import validates
 
-import validators
-
-from . import db
+from app.api import validators
+from app.api.models import db
 
 
 class Job(db.Model):
@@ -37,21 +33,19 @@ class Job(db.Model):
 
     @validates("company")
     def validate_company(self, key, value):
-        if value.strip() == '':
-            raise ValueError("Company is a required field.")
-        return value
+        return validators.is_string(key, value, required=True)
 
     @validates("position")
     def validate_position(self, key, value):
-        if value.strip() == '':
-            raise ValueError("Position is a required field.")
-        return value
+        return validators.is_string(key, value, required=True)
 
     @validates("location")
     def validate_location(self, key, value):
-        if value.strip() == '':
-            raise ValueError("Location is a required field.")
-        return value
+        return validators.is_string(key, value, required=True)
+
+    @validates("url")
+    def validate_url(self, key, value):
+        return validators.is_url(key, value)
 
 
 @functools.total_ordering
@@ -59,7 +53,7 @@ class Event(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     date = db.Column(db.String(10), nullable=False)
     event_type = db.Column(db.String(50), nullable=False)
-    deadline = db.Column(db.String(10))
+    event_date = db.Column(db.String(10))
     comment = db.Column(db.String(200))
 
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
@@ -78,13 +72,24 @@ class Event(db.Model):
         elif self.event_type == other.event_type:
             return False
 
-        for status in ("JobAdded", "Note", "ApplicationSubmitted",
-                       "ScreeningScheduled", "ScreeningCompleted",
-                       "AssessmentScheduled", "AssessmentCompleted",
-                       "InterviewScheduled", "InterviewCompleted",
-                       "Rejected",
-                       "OfferMade", "OfferAccepted", "OfferRejected"):
+        for status in validators.ordered_event_types:
             if self.event_type == status:
                 return True
             elif other.event_type == status:
                 return False
+
+    @validates("event_type")
+    def validates_event_type(self, key, value):
+        return validators.is_event_type(key, value, required=True)
+
+    @validates("date")
+    def validates_date(self, key, value):
+        return validators.is_date(key, value, required=True)
+
+    @validates("event_date")
+    def validates_event_date(self, key, value):
+        return validators.is_date(key, value)
+
+    @validates("comment")
+    def validates_comment(self, key, value):
+        return validators.is_string(key, value, remove_linebreaks=True)

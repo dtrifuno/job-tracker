@@ -1,14 +1,18 @@
 <template>
   <div class="container">
     <div class="row">
-      <h2 class="mt-4 mb-3">Profile</h2>
+      <h2 class="mt-4 mb-3">Job Details</h2>
     </div>
     <div class="card row">
-      <div class="card-header">
-        <h4 class="mb-0">Job Details</h4>
-      </div>
+      <CardTitle
+        title="General"
+        buttonText="Save"
+        :buttonDisabled="spinners.isLoadingJobDetails"
+        :onClick="onClickUpdate"
+      />
       <div class="card-body">
-        <form novalidate>
+        <Spinner v-if="spinners.isLoadingJobDetails" />
+        <div v-else>
           <div class="form-group">
             <label for="companyInput">Company</label>
             <input type="text" class="form-control" id="companyInput" v-model="company" />
@@ -25,35 +29,33 @@
             <label for="urlInput">URL</label>
             <input type="url" class="form-control" id="urlInput" v-model="url" />
           </div>
-          <button type="submit" class="btn btn-primary">Update</button>
-        </form>
-      </div>
-    </div>
-
-    <div class="card row">
-      <div class="card-header">
-        <h4 class="mb-0">Timeline</h4>
-      </div>
-      <div class="card-body">
-        <button class="btn btn-primary" @click="showAddEventModal">Add Event</button>
-      </div>
-    </div>
-
-    <div class="card row">
-      <div class="card-header">
-        <h4 class="mb-0">Job Description</h4>
-      </div>
-      <div class="card-body">
-        <div class="form-group" v-if="editDescription">
-          <textarea class="form-control" rows="20" v-model="description" />
-          <small class="form-text text-muted">Use Markdown.</small>
         </div>
-        <VueShowdown :markdown="description" v-if="!editDescription" />
-        <div class="form-group">
-          <button
-            class="btn btn-primary"
-            @click="editDescription = !editDescription"
-          >{{ editDescription ? "Save" : "Edit" }}</button>
+      </div>
+    </div>
+
+    <div class="card row">
+      <CardTitle title="Timeline" :onClick="showAddEventModal" />
+      <div class="container">
+        <Spinner v-if="spinners.isLoadingEvents" />
+        <Events v-else :events="job.events" />
+      </div>
+    </div>
+
+    <div class="card row">
+      <CardTitle
+        title="Job Description"
+        :buttonText="editDescription ? 'Save' : 'Edit'"
+        :buttonDisabled="spinners.isLoadingJobDescription"
+        :onClick="toggleDescription"
+      />
+      <div class="container">
+        <Spinner v-if="spinners.isLoadingJobDescription" />
+        <div v-else class="p-2 py-3">
+          <div class="form-group" v-if="editDescription">
+            <textarea class="form-control" rows="20" v-model="description" />
+            <small class="form-text text-muted">Use Markdown.</small>
+          </div>
+          <VueShowdown :markdown="description" v-if="!editDescription" />
         </div>
       </div>
     </div>
@@ -63,24 +65,29 @@
       <div class="card-header">
         <h4 class="mb-0">Customized CV</h4>
       </div>
-      <div class="card-body"></div>
+      <div class="card-body">
+        <Spinner v-if="spinners.isLoadingCV" />
+        <div v-else>
+          <h2>CUSTOMIZED CV</h2>
+        </div>
+      </div>
     </div>
 
     <div class="card row">
-      <div class="card-header">
-        <h4 class="mb-0">Cover Letter</h4>
-      </div>
-      <div class="card-body">
-        <div class="form-group" v-if="editCoverLetter">
-          <textarea class="form-control" rows="20" v-model="coverLetter" />
-          <small class="form-text text-muted">Use Markdown.</small>
-        </div>
-        <VueShowdown :markdown="coverLetter" v-if="!editCoverLetter" />
-        <div class="form-group">
-          <button
-            class="btn btn-primary"
-            @click="editCoverLetter = !editCoverLetter"
-          >{{ editCoverLetter ? "Save" : "Edit" }}</button>
+      <CardTitle
+        title="Cover Letter"
+        :buttonText="editCoverLetter ? 'Save' : 'Edit'"
+        :buttonDisabled="spinners.isLoadingCoverLetter"
+        :onClick="toggleCoverLetter"
+      />
+      <div class="container">
+        <Spinner v-if="spinners.isLoadingCoverLetter" />
+        <div v-else class="p-2 py-3">
+          <div class="form-group py-2" v-if="editCoverLetter">
+            <textarea class="form-control" rows="20" v-model="coverLetter" />
+            <small class="form-text text-muted">Use Markdown.</small>
+          </div>
+          <VueShowdown :markdown="coverLetter" v-if="!editCoverLetter" />
         </div>
       </div>
     </div>
@@ -88,13 +95,16 @@
 </template>
 
 <script>
+import { mapActions, mapMutations, mapState } from "vuex";
 import { VueShowdown } from "vue-showdown";
 
-import {mapActions} from "vuex";
+import CardTitle from "@/components/CardTitle";
+import Events from "./Events";
+import Spinner from "@/components/Spinner";
 
 export default {
   name: "JobDetails",
-  components: { VueShowdown },
+  components: { VueShowdown, CardTitle, Events, Spinner },
   data() {
     return {
       id: null,
@@ -108,18 +118,40 @@ export default {
       editCoverLetter: false
     };
   },
+  computed: {
+    ...mapState({
+      job: state => state.jobDetails.details,
+      spinners: state => state.spinners.job
+    })
+  },
   methods: {
-    ...mapActions(["getJob"]),
+    ...mapActions(["getJob", "updateJob", "flashSuccess"]),
+    ...mapMutations([
+      "setJobLoading",
+      "unsetJobLoading",
+      "toggleLoadingJobDetails",
+      "toggleLoadingJobDescription",
+      "toggleLoadingCoverLetter"
+    ]),
     extractDataToObject() {
       const data = {
         company: this.company,
         position: this.position,
         location: this.location,
-        url: this.url,
-        description: this.description,
-        coverLetter: this.coverLetter,
+        url: this.url
       };
       return data;
+    },
+    extractJobDetailsFromState() {
+      const jobDetails = {
+        company: this.job.company,
+        position: this.job.position,
+        location: this.job.location,
+        url: this.job.url,
+        description: this.job.description,
+        coverLetter: this.job.coverLetter
+      };
+      return jobDetails;
     },
     setDataFromObject(data) {
       for (const [field, value] of Object.entries(data)) {
@@ -133,9 +165,53 @@ export default {
         location: "",
         url: "",
         description: "",
-        coverLetter: "",
+        coverLetter: ""
       };
       this.setDataFromObject(clearData);
+    },
+    onClickUpdate() {
+      this.toggleLoadingJobDetails();
+      this.updateJob({
+        jobData: this.extractDataToObject(),
+        id: this.id
+      })
+        .then(() => {
+          this.setDataFromObject(this.extractJobDetailsFromState());
+          this.flashSuccess("Changes successfully saved.");
+        })
+        .finally(this.toggleLoadingJobDetails);
+    },
+    toggleDescription() {
+      if (this.editDescription) {
+        this.toggleLoadingJobDescription();
+        this.updateJob({
+          jobData: { description: this.description },
+          id: this.id
+        })
+          .then(() => {
+            this.flashSuccess("Changes successfully saved.");
+            this.editDescription = !this.editDescription;
+          })
+          .finally(this.toggleLoadingJobDescription);
+      } else {
+        this.editDescription = !this.editDescription;
+      }
+    },
+    toggleCoverLetter() {
+      if (this.editCoverLetter) {
+        this.toggleLoadingCoverLetter();
+        this.updateJob({
+          jobData: { coverLetter: this.coverLetter },
+          id: this.id
+        })
+          .then(() => {
+            this.flashSuccess("Changes successfully saved.");
+            this.editCoverLetter = !this.editCoverLetter;
+          })
+          .finally(this.toggleLoadingCoverLetter);
+      } else {
+        this.editCoverLetter = !this.editCoverLetter;
+      }
     },
     showAddEventModal() {
       this.$modal.show("AddEditEventModal");
@@ -143,15 +219,18 @@ export default {
   },
   created() {
     this.clearFields();
+    this.setJobLoading();
     this.id = this.$route.params.id;
     this.getJob(this.id)
+      .then(() => this.setDataFromObject(this.extractJobDetailsFromState()))
+      .finally(this.unsetJobLoading);
   }
 };
 </script>
 
 <style scoped>
 .card {
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.6rem;
 }
 
 h2,

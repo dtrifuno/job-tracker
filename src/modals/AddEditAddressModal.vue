@@ -8,7 +8,7 @@
         </button>
       </div>
       <div class="modal-body">
-        <form @submit.prevent="isUpdate ? onClickEdit() : onClickSubmit()">
+        <form>
           <div class="container">
             <div class="form-group row">
               <label for="lineOneInput" class="col-form-label col-lg-3">Address Line 1</label>
@@ -29,7 +29,20 @@
               </div>
             </div>
             <div class="row">
-              <button type="submit" class="btn btn-primary ml-auto">Submit</button>
+              <div class="ml-auto">
+                <button
+                  type="submit"
+                  class="btn btn-primary mx-3"
+                  @click.prevent="isUpdate ? onClickEdit() : onClickSubmit()"
+                  :disabled="isLoading"
+                >Submit</button>
+                <button
+                  class="btn btn-primary"
+                  v-if="isUpdate"
+                  @click.prevent="onClickDelete"
+                  :disabled="isLoading"
+                >Delete</button>
+              </div>
             </div>
           </div>
         </form>
@@ -39,7 +52,7 @@
 </template>
 
 <script>
-import { mapActions } from "vuex";
+import { mapActions, mapMutations, mapState } from "vuex";
 
 import modalProps from "./modalProps";
 
@@ -55,8 +68,19 @@ export default {
       modalProps
     };
   },
+  computed: {
+    ...mapState({
+      isLoading: state => state.spinners.profile.isLoadingAddresses
+    }),
+  },
   methods: {
-    ...mapActions(["createAddress", "editAddress", "flashSuccess"]),
+    ...mapActions([
+      "createAddress",
+      "editAddress",
+      "deleteAddress",
+      "flashSuccess"
+    ]),
+    ...mapMutations(["toggleLoadingAddresses"]),
     extractDataToObject() {
       const data = {
         lineOne: this.lineOne,
@@ -89,18 +113,34 @@ export default {
         this.isUpdate = false;
       }
     },
-    async onClickSubmit() {
+    onClickSubmit() {
+      this.toggleLoadingAddresses();
       this.createAddress({ addressData: this.extractDataToObject() })
         .then(() => {
           this.closeModal();
-          this.flashSuccess("Address sucessfully added.");
-        })
-        .catch(err => err);
+          this.flashSuccess("Address successfully added.");
+        }).catch(err => err)
+        .finally(this.toggleLoadingAddresses);
     },
     onClickEdit() {
+      this.toggleLoadingAddresses();
       this.editAddress({ id: this.id, addressData: this.extractDataToObject() })
-        .then(this.closeModal)
-        .catch(err => err);
+        .then(() => {
+          this.closeModal();
+          this.flashSuccess("Changes successfully saved.");
+        })
+        .catch(err => err)
+        .finally(this.toggleLoadingAddresses);
+    },
+    onClickDelete() {
+      this.toggleLoadingAddresses();
+      this.deleteAddress(this.id)
+        .then(() => {
+          this.closeModal();
+          this.flashSuccess("Address successfully deleted.");
+        })
+        .catch(err => err)
+        .finally(this.toggleLoadingAddresses);
     },
     closeModal() {
       this.$modal.hide("AddEditAddressModal");

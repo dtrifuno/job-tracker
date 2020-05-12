@@ -49,6 +49,7 @@
                 type="submit"
                 class="btn btn-primary ml-auto"
                 @click.prevent="onClickSubmit()"
+                :disabled="isLoading"
               >Submit</button>
             </div>
           </form>
@@ -59,7 +60,7 @@
 </template>
 
 <script>
-import { mapActions } from "vuex";
+import { mapActions, mapMutations, mapState } from "vuex";
 
 import modalProps from "./modalProps";
 
@@ -75,8 +76,14 @@ export default {
       modalProps
     };
   },
+  computed: {
+    ...mapState({
+      isLoading: state => state.spinners.isLoadingJobs
+    })
+  },
   methods: {
-    ...mapActions(["createJob"]),
+    ...mapActions(["createJob", "flashSuccess"]),
+    ...mapMutations(["toggleLoadingJobs"]),
     extractDataToObject() {
       const data = {
         position: this.position,
@@ -106,10 +113,13 @@ export default {
       this.clearFields();
     },
     onClickSubmit() {
+      this.toggleLoadingJobs();
       this.createJob({
-        date: (new Date()).toISOString().split("T")[0],
+        date: new Date().toISOString().split("T")[0],
         jobData: this.extractDataToObject()
-      });
+      })
+        .then(() => this.closeModal())
+        .finally(this.toggleLoadingJobs);
     },
     closeModal() {
       this.$modal.hide("AddJobModal");

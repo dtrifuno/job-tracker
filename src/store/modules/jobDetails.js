@@ -1,40 +1,71 @@
+import {
+  doQuery,
+  doDelete,
+  executeString,
+  doEditFromObject,
+} from "@/link";
+
 const state = {
-  job: {},
-  events: [],
-  description: "",
-  coverLetter: "",
+  details: {
+    location: "",
+    position: "",
+    company: "",
+    url: "",
+    events: [],
+    description: "",
+    coverLetter: "",
+  },
 };
 
 const getters = {};
 
 const actions = {
-  /*
-  async getJob({ commit }, jobId) {},
-  async editDescription({ commit, state }, description) {
-    commit("setDescription", description);
+  getJob({ commit }, jobId) {
+    return doQuery(`job(id: "${jobId}") {
+        id, company, position, location, url, description, coverLetter, events { id, date, eventType, eventDate, comment }
+    }`).then((res) => commit("updateJob", res.data.job));
   },
-  */
-  async createEvent({ commit }, event) {
-    commit("addEvent", event);
+  updateJob({ commit }, { id, jobData }) {
+    return doEditFromObject("job", id, jobData).then((res) =>
+      commit("updateJob", res.data.editJob.job)
+    );
   },
-  async deleteEvent({ commit }, eventID) {
-    commit("removeEvent", eventID);
+  createEvent({ commit }, {jobId, eventData}) {
+    console.log(jobId, eventData)
+    return executeString(
+      `mutation CreateEvent($jobId: ID!, $eventData: EventInput!) {
+        createEvent(jobId: $jobId, eventData: $eventData) {
+          event { id, ${Object.keys(eventData).join(", ")} }
+        }
+    }`,
+      { eventData, jobId }
+    )
+    .then((res) =>
+      commit("addEvent", res.data.createEvent.event))
   },
-  async editEvent({ commit }, event) {
-    commit("updateEvent", event);
+  deleteEvent({ commit }, eventId) {
+    return doDelete("event", eventId).then(() =>
+      commit("removeEvent", eventId)
+    );
+  },
+  editEvent({ commit }, { id, eventData }) {
+    return doEditFromObject("event", id, eventData).then((res) =>
+      commit("updateEvent", res.data.editEvent.event)
+    )
   },
 };
 
 const mutations = {
-  setJob: (state, job) => (state.job = job),
-  setDescription: (state, description) => (state.description = description),
-  addEvent: (state, event) => state.events.push(event),
+  updateJob: (state, job) => (state.details = { ...state.details, ...job }),
+  addEvent: (state, event) => state.details.events.push(event),
   removeEvent: (state, eventID) =>
-    (state.events = state.events.filter((x) => x.id !== eventID)),
+    (state.details.events = state.details.events.filter(
+      (x) => x.id !== eventID
+    )),
   updateEvent: (state, event) => {
-    const idx = state.events.findIndex((x) => x.id === event.id);
+    const idx = state.details.events.findIndex((x) => x.id === event.id);
     if (idx >= 0) {
-      state.events.splice(idx, 1, event);
+      state.details.events.splice(idx, 1, event);
     }
   },
 };

@@ -1,5 +1,6 @@
 import {
   doQuery,
+  executeString,
   doCreateFromObject,
   doEditFromObject,
   doDelete,
@@ -92,28 +93,32 @@ const actions = {
       commit("setProjects", res.data.personalProjects);
     });
   },
-  editBiographicalData({ commit }, biographicalData) {
-    doEditFromObject("editBiographicalData", "profile", biographicalData).then(
-      (res) => {
-        commit("setBiographicalData", res.data.editBiographicalData.profile);
-      }
-    );
+  editBiographicalData({ commit }, biographicalDataData) {
+    return executeString(
+      `mutation EditBiographicalData($biographicalDataData: BiographicalDataInput!) {
+        editBiographicalData(biographicalDataData: $biographicalDataData) {
+         profile { firstName, lastName, email, phoneNumber, websiteUrl, githubUrl, linkedinUrl }
+        }
+  }`,
+      { biographicalDataData }
+    ).then((res) => {
+      commit("setBiographicalData", res.data.editBiographicalData.profile);
+    });
   },
 
   // Address actions
-  async createAddress({ commit }, { addressData }) {
-    return doCreateFromObject("address", addressData )
-      .then((res) => commit("addAddress", res.data.createAddress.address))
-      .catch((err) => console.log(err));
+  createAddress({ commit }, { addressData }) {
+    return doCreateFromObject("address", addressData).then((res) =>
+      commit("addAddress", res.data.createAddress.address)
+    );
   },
-  async editAddress({ commit }, { id, addressData }) {
-    console.log({ id, addressData });
+  editAddress({ commit }, { id, addressData }) {
     return doEditFromObject("address", id, addressData).then((res) =>
       commit("updateAddress", res.data.editAddress.address)
     );
   },
-  async deleteAddress({ commit }, addressId) {
-    return doDelete("deleteAddress", addressId).then(() =>
+  deleteAddress({ commit }, addressId) {
+    return doDelete("address", addressId).then(() =>
       commit("removeAddress", addressId)
     );
   },
@@ -142,13 +147,13 @@ const actions = {
       )
     );
   },
-  async deleteEducationExperience({ commit }, educationId) {
-    return doDelete("deleteEducationExperience", educationId).then(() =>
+  deleteEducationExperience({ commit }, educationId) {
+    return doDelete("educationExperience", educationId).then(() =>
       commit("removeEducationExperience", educationId)
     );
   },
 
-  // Skills actions
+  // Skill actions
   async createSkill({ commit }, { skillData }) {
     return doCreateFromObject("skill", skillData).then((res) =>
       commit("addSkill", res.data.createSkill.skill)
@@ -160,12 +165,12 @@ const actions = {
     );
   },
   async deleteSkill({ commit }, skillId) {
-    return doDelete("deleteSkill", skillId).then(() =>
+    return doDelete("skill", skillId).then(() =>
       commit("removeSkill", skillId)
     );
   },
 
-  //
+  // Work experience actions
   async createWorkExperience({ commit }, { workExperienceData }) {
     return doCreateFromObject(
       "workExperience",
@@ -184,12 +189,12 @@ const actions = {
     );
   },
   async deleteWorkExperience({ commit }, workId) {
-    return doDelete("deleteWorkExperience", workId).then(() =>
+    return doDelete("workExperience", workId).then(() =>
       commit("removeWorkExperience", workId)
     );
   },
 
-  //
+  // Personal projects actions
   async createPersonalProject({ commit }, { personalProjectData }) {
     return doCreateFromObject(
       "personalProject",
@@ -214,7 +219,7 @@ const actions = {
     );
   },
   async deletePersonalProject({ commit }, projectId) {
-    return doDelete("deletePersonalProject", projectId).then(() =>
+    return doDelete("personalProject", projectId).then(() =>
       commit("removePersonalProject", projectId)
     );
   },

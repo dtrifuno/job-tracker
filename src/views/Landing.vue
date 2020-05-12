@@ -58,12 +58,16 @@
         </div>
       </div>
     </section>
+    <Bouncer />
   </main>
 </template>
 
 <script>
+import Bouncer from "@/components/Bouncer";
+
 export default {
-  name: "Landing"
+  name: "Landing",
+  components: { Bouncer }
 };
 </script>
 

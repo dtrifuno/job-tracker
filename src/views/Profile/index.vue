@@ -4,11 +4,15 @@
       <h2 class="mt-4 mb-3">Profile</h2>
     </div>
     <div class="card row">
-      <div class="card-header">
-        <h4 class="mb-0">Biographical</h4>
-      </div>
+      <CardTitle
+        title="Biographical"
+        buttonText="Save"
+        :onClick="onSubmit"
+        :buttonDisabled="spinners.isLoadingBiographical"
+      />
       <div class="card-body">
-        <form novalidate @submit.prevent="onSubmit">
+        <Spinner v-if="spinners.isLoadingBiographical" />
+        <div v-else>
           <div class="row form-group">
             <div class="col">
               <label for="firstNameInput">First Name</label>
@@ -42,33 +46,22 @@
             <label for="linkedinUrlInput">LinkedIn URL</label>
             <input type="url" class="form-control" id="linkedinUrlInput" v-model="linkedinUrl" />
           </div>
-          <button type="submit" class="btn btn-primary">Update</button>
-        </form>
+        </div>
       </div>
     </div>
 
     <div class="card row">
       <CardTitle title="Addresses" :onClick="showAddAddressModal" />
       <div class="container">
-        <div class="list-group" :class="{ 'my-2' : addresses.length > 0}">
-          <div v-for="address in addresses" v-bind:key="address.id" class="list-group-item">
+        <Spinner v-if="spinners.isLoadingAddresses" />
+        <div class="list-group" :class="{ 'my-2' : addresses.length > 0}" v-else>
+          <div
+            v-for="address in addresses"
+            v-bind:key="address.id"
+            class="list-group-item address-item"
+            @click="showEditAddressModal(address)"
+          >
             <div class="float-left py-2">{{ addressToString(address) }}</div>
-            <div class="float-right">
-              <button
-                type="button"
-                class="btn btn-outline-success btn-sm mx-1"
-                @click="showEditAddressModal(address)"
-              >
-                <i class="fas fa-edit" aria-hidden="true" />
-              </button>
-              <button
-                type="button"
-                class="btn btn-sm btn-outline-danger float-right"
-                @click="showDeleteAddressModal(address)"
-              >
-                <i href class="fas fa-trash-alt" aria-hidden="true" />
-              </button>
-            </div>
           </div>
         </div>
       </div>
@@ -77,7 +70,9 @@
     <div class="card row">
       <CardTitle title="Education" :onClick="showAddEducationModal" />
       <div class="container">
+        <Spinner v-if="spinners.isLoadingEducation" />
         <CVItem
+          v-else
           v-for="school in sortedEducation"
           v-bind:key="school.id"
           :heading="school.school"
@@ -89,8 +84,7 @@
             `${renderMonth(school.dateFrom)} - ${renderMonth(school.dateTo)}`
           "
           :bullets="school.description ? school.description.split('\n'): []"
-          :onEdit="() => showEditEducationModal(school)"
-          :onDelete="() => showDeleteEducationModal(school)"
+          :onClick="() => showEditEducationModal(school)"
         />
       </div>
     </div>
@@ -98,9 +92,10 @@
     <div class="card row">
       <CardTitle title="Skills" :onClick="showAddSkillModal" />
       <div class="container">
+        <Spinner v-if="spinners.isLoadingSkills" />
         <table
           class="table table-bordered table-sm my-2"
-          v-if="groupedSkills.sortedCategories.length > 0"
+          v-else-if="groupedSkills.sortedCategories.length > 0"
         >
           <thead>
             <th style="width: 14%" scope="col">Category</th>
@@ -126,7 +121,9 @@
     <div class="card row">
       <CardTitle title="Work History" :onClick="showAddWorkExperienceModal" />
       <div class="container">
+        <Spinner v-if="spinners.isLoadingWorkHistory" />
         <CVItem
+          v-else
           v-for="job in sortedWorkHistory"
           v-bind:key="job.id"
           :heading="job.company"
@@ -136,8 +133,7 @@
             `${renderMonth(job.dateFrom)} - ${renderMonth(job.dateTo)}`
           "
           :bullets="job.description ? job.description.split('\n') : []"
-          :onEdit="() => showEditWorkExperienceModal(job)"
-          :onDelete="() => showDeleteWorkExperienceModal(job)"
+          :onClick="() => showEditWorkExperienceModal(job)"
         />
       </div>
     </div>
@@ -145,14 +141,15 @@
     <div class="card row">
       <CardTitle title="Personal Projects" :onClick="showAddPersonalProjectModal" />
       <div class="container">
+        <Spinner v-if="spinners.isLoadingPersonalProjects" />
         <CVItem
+          v-else
           v-for="project in projects"
           v-bind:key="project.id"
           :heading="project.projectName"
           :headingRight="project.url"
           :bullets="project.description ? project.description.split('\n') : []"
-          :onDelete="() => showDeletePersonalProjectModal(project)"
-          :onEdit="() => showEditPersonalProjectModal(project)"
+          :onClick="() => showEditPersonalProjectModal(project)"
         />
       </div>
     </div>
@@ -160,18 +157,20 @@
 </template>
 
 <script>
-import { mapState, mapActions, mapGetters } from "vuex";
+import { mapState, mapActions, mapGetters, mapMutations } from "vuex";
 
 import { renderMonth } from "@/utils.js";
 
-import CardTitle from "./CardTitle";
+import Spinner from "@/components/Spinner";
+import CardTitle from "@/components/CardTitle";
 import CVItem from "./CVItem";
 
 export default {
   name: "Profile",
   components: {
     CVItem,
-    CardTitle
+    CardTitle,
+    Spinner
   },
   data() {
     return {
@@ -188,12 +187,16 @@ export default {
     ...mapState({
       biographicalData: state => state.profile.biographicalData,
       addresses: state => state.profile.addresses,
-      projects: state => state.profile.projects
+      projects: state => state.profile.projects,
+      spinners: state => state.spinners.profile
     }),
     ...mapGetters(["sortedEducation", "sortedWorkHistory", "groupedSkills"])
   },
   created() {
-    this.getProfile().then(() => this.extractBiographicalDataFromState());
+    this.setProfileLoading();
+    this.getProfile()
+      .then(this.extractBiographicalDataFromState)
+      .finally(this.unsetProfileLoading);
   },
   methods: {
     ...mapActions([
@@ -202,7 +205,13 @@ export default {
       "deleteAddress",
       "deleteEducationExperience",
       "deleteWorkExperience",
-      "deletePersonalProject"
+      "deletePersonalProject",
+      "flashSuccess"
+    ]),
+    ...mapMutations([
+      "setProfileLoading",
+      "unsetProfileLoading",
+      "toggleLoadingBiographical"
     ]),
     extractBiographicalDataToObject() {
       return {
@@ -227,11 +236,16 @@ export default {
     extractBiographicalDataFromState() {
       this.setDataToObject(this.biographicalData);
     },
-    onSubmit() {
+    async onSubmit() {
       const oldBiographicalData = { ...this.biographicalData };
+      this.toggleLoadingBiographical();
       this.editBiographicalData(this.extractBiographicalDataToObject())
-        .then(() => this.extractBiographicalDataFromState())
-        .catch(() => this.setDataToObject(oldBiographicalData));
+        .then(() => {
+          this.extractBiographicalDataFromState();
+          this.flashSuccess("Changes successfully saved.");
+        })
+        .catch(() => this.setDataToObject(oldBiographicalData))
+        .finally(this.toggleLoadingBiographical);
     },
     renderMonth,
     addressToString(address) {
@@ -240,59 +254,31 @@ export default {
         .join(", ");
     },
 
-    // Address modals
+    // Modals
     showAddAddressModal() {
       this.$modal.show("AddEditAddressModal");
-    },
-    showDeleteAddressModal(address) {
-      this.$modal.show("DeleteModal", {
-        title: "Delete Address",
-        target: `the address ${this.addressToString(address)}`,
-        deleteAction: () => this.deleteAddress(address.id)
-      });
     },
     showEditAddressModal(address) {
       this.$modal.show("AddEditAddressModal", {
         address
       });
     },
-
-    // Education modals
     showAddEducationModal() {
       this.$modal.show("AddEditEducationModal");
-    },
-    showDeleteEducationModal(educationExperience) {
-      this.$modal.show("DeleteModal", {
-        title: "Delete Educational Experience",
-        target: "this educational experience",
-        deleteAction: () =>
-          this.deleteEducationExperience(educationExperience.id)
-      });
     },
     showEditEducationModal(educationExperience) {
       this.$modal.show("AddEditEducationModal", {
         educationExperience
       });
     },
-
-    // Personal project modals
     showAddPersonalProjectModal() {
       this.$modal.show("AddEditPersonalProjectModal");
-    },
-    showDeletePersonalProjectModal(personalProject) {
-      this.$modal.show("DeleteModal", {
-        title: "Delete Personal Project",
-        target: personalProject.projectName,
-        deleteAction: () => this.deletePersonalProject(personalProject.id)
-      });
     },
     showEditPersonalProjectModal(personalProject) {
       this.$modal.show("AddEditPersonalProjectModal", {
         personalProject
       });
     },
-
-    // Skills modals
     showAddSkillModal() {
       this.$modal.show("AddEditSkillModal");
     },
@@ -301,16 +287,8 @@ export default {
         skill
       });
     },
-
-    // Work experience modals
     showAddWorkExperienceModal() {
       this.$modal.show("AddEditWorkExperienceModal");
-    },
-    showDeleteWorkExperienceModal(workExperience) {
-      this.$modal.show("DeleteModal", {
-        title: "Delete Work Experience",
-        deleteAction: () => this.deleteWorkExperience(workExperience.id)
-      });
     },
     showEditWorkExperienceModal(workExperience) {
       this.$modal.show("AddEditWorkExperienceModal", {
@@ -329,5 +307,16 @@ export default {
 h2,
 .card-header {
   user-select: none;
+}
+
+.address-item {
+  cursor: pointer;
+  transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out,
+    border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out,
+    -webkit-box-shadow 0.15s ease-in-out;
+}
+
+.address-item:hover {
+  background-color: #ececec;
 }
 </style>

@@ -66,21 +66,15 @@ export default new Router({
       },
     },
     {
-      path: "/stats",
-      name: "stats",
-      component: () =>
-        import(/* webpackChunkName: "stats" */ "./views/Stats.vue"),
-      beforeEnter(to, from, next) {
-        bounceUnathorizedToLogin(next);
-      },
-    },
-    {
       path: "/job",
       name: "job-details",
       component: () =>
         import(
           /* webpackChunkName: "job-details" */ "./views/JobDetails/index.vue"
         ),
+      beforeEnter(to, from, next) {
+        bounceUnathorizedToLogin(next);
+      },
     },
     {
       path: "/profile",

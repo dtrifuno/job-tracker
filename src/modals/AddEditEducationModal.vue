@@ -61,11 +61,20 @@
               <small class="form-text text-muted">Use line breaks to create bullet points.</small>
             </div>
             <div class="row">
-              <button
-                type="submit"
-                class="btn btn-primary ml-auto"
-                @click.prevent="isUpdate ? onClickEdit() : onClickSubmit()"
-              >Submit</button>
+              <div class="ml-auto">
+                <button
+                  type="submit"
+                  class="btn btn-primary mx-3"
+                  @click.prevent="isUpdate ? onClickEdit() : onClickSubmit()"
+                  :disabled="isLoading"
+                >Submit</button>
+                <button
+                  class="btn btn-primary"
+                  v-if="isUpdate"
+                  @click.prevent="onClickDelete"
+                  :disabled="isLoading"
+                >Delete</button>
+              </div>
             </div>
           </div>
         </form>
@@ -75,7 +84,7 @@
 </template>
 
 <script>
-import { mapActions } from "vuex";
+import { mapActions, mapMutations, mapState } from "vuex";
 
 import modalProps from "./modalProps";
 
@@ -95,12 +104,19 @@ export default {
       modalProps
     };
   },
+  computed: {
+    ...mapState({
+      isLoading: state => state.spinners.profile.isLoadingEducation
+    })
+  },
   methods: {
     ...mapActions([
       "createEducationExperience",
       "editEducationExperience",
+      "deleteEducationExperience",
       "flashSuccess"
     ]),
+    ...mapMutations(["toggleLoadingEducation"]),
     extractDataToObject() {
       const data = {
         school: this.school,
@@ -141,7 +157,8 @@ export default {
         this.isUpdate = false;
       }
     },
-    async onClickSubmit() {
+    onClickSubmit() {
+      this.toggleLoadingEducation();
       this.createEducationExperience({
         educationExperienceData: this.extractDataToObject()
       })
@@ -149,15 +166,31 @@ export default {
           this.closeModal();
           this.flashSuccess("Educational experience sucessfully added.");
         })
-        .catch(err => err);
+        .catch(err => err)
+        .finally(this.toggleLoadingEducation);
     },
-    async onClickEdit() {
+    onClickEdit() {
+      this.toggleLoadingEducation();
       this.editEducationExperience({
         id: this.id,
         educationExperienceData: this.extractDataToObject()
       })
-        .then(this.closeModal)
-        .catch(err => err);
+        .then(() => {
+          this.closeModal();
+          this.flashSuccess("Changes successfully saved.");
+        })
+        .catch(err => err)
+        .finally(this.toggleLoadingEducation);
+    },
+    onClickDelete() {
+      this.toggleLoadingEducation();
+      this.deleteEducationExperience(this.id)
+        .then(() => {
+          this.closeModal();
+          this.flashSuccess("Educational experience successfully deleted.");
+        })
+        .catch(err => err)
+        .finally(this.toggleLoadingEducation);
     },
     closeModal() {
       this.$modal.hide("AddEditEducationModal");

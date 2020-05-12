@@ -94,10 +94,13 @@ export const doEditFromObject = (objectName, id, mutationObject) => {
   );
 };
 
-export const doDelete = (mutationName, id) => {
+export const doDelete = (objectName, id) => {
+  const capitalizedName =
+    objectName.charAt(0).toUpperCase() + objectName.slice(1);
+
   return executeString(
     `mutation {
-      ${mutationName}(id: "${id}") { ok }
+      delete${capitalizedName}(id: "${id}") { ok }
     }`)
 };
 

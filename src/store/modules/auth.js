@@ -1,4 +1,4 @@
-import { executeString } from "@/link";
+import { executeString, doQuery } from "@/link";
 
 const state = {
   username: null,
@@ -25,6 +25,7 @@ const actions = {
   },
   createUser({ commit }, { username, password }) {
     return executeString(`
+    mutation {
       createUser(username: "${username}", password: "${password}") {
         user {
           username
@@ -38,7 +39,23 @@ const actions = {
     });
   },
   logout({ commit }) {
+    localStorage.removeItem("token");
     commit("clearAuthentication");
+  },
+  loadUser({ commit }) {
+    const token = localStorage.getItem("token");
+    commit("loading");
+
+    if (token) {
+      doQuery("user { username }")
+        .then((res) => {
+          commit("setAuthentication", {
+            username: res.data.user.username,
+            token,
+          });
+        })
+        .catch(() => commit("clearAuthentication"));
+    }
   },
 };
 
