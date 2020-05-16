@@ -1,5 +1,6 @@
 const state = {
   profile: {
+    isProfileLoaded: false,
     isLoadingBiographical: false,
     isLoadingAddresses: false,
     isLoadingEducation: false,
@@ -26,6 +27,7 @@ const actions = {};
 const mutations = {
   setProfileLoading: (state) => {
     const profileIsLoading = {
+      isProfileLoaded: false,
       isLoadingBiographical: true,
       isLoadingAddresses: true,
       isLoadingEducation: true,
@@ -35,8 +37,9 @@ const mutations = {
     };
     state.profile = { ...state.profile, ...profileIsLoading };
   },
-  unsetProfileLoading: (state) => {
+  setProfileLoaded: (state) => {
     const profileIsNotLoading = {
+      isProfileLoaded: true,
       isLoadingBiographical: false,
       isLoadingAddresses: false,
       isLoadingEducation: false,
@@ -61,6 +64,7 @@ const mutations = {
     (state.profile.isLoadingPersonalProjects = !state.profile
       .isLoadingPersonalProjects),
 
+  setLoadingJobs: (state, value) => (state.isLoadingJobs = value),
   toggleLoadingJobs: (state) => (state.isLoadingJobs = !state.isLoadingJobs),
 
   unsetJobLoading: (state) => {

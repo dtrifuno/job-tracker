@@ -1,6 +1,8 @@
 # JobTracker
 
-JobTracker is a web application that helps users prepare customized job application materials and keep track of application statuses, deadlines, job descriptions and job details for all positions the user has applied for during their job search process.
+JobTracker is a web application that helps users prepare customized job application materials and keep track of application statuses, deadlines, descriptions and details for all positions the user has applied for during their job search.
+
+Go to [trifunovski.me/job-tracker](https://trifunovski/me/job-tracker) to try it out!
 
 ![JobTracker](https://raw.githubusercontent.com/dtrifuno/)
 
@@ -30,17 +32,30 @@ $ npm install
 
 ## Usage
 
-### Compiles and hot-reloads for development
+### Development
+Run 
+```
+$ poetry run dev
+```
+to start the Flask server in development mode, and
+```
+$ npm run dev
+```
+to start a client dev server.
 
-### Compiles and minifies for production
+By default, the job-tracker's Flask development server will run CORS only on `localhost/127.0.0.1`. Edit `config.py` if that is not the desired behavior.
+
+### Deployment
 
 ## TODO
 * **Stats Dashboard**
-Create a dashboard where users can keep track of the total number of applications in a given status, the number of applications submitted in a given month or week, etc.
+Create a dashboard where users can keep track of the total number of applications submitted/rejected/waiting response/etc. and can set a goal for the number of applications they want to submit per month or week.
 * **Calendar**
 Create a page where the user can see all of their scheduled assessments, interviews and other upcoming deadlines. Integrate this functionality with Google Calendar.
 * **Testing**
 Write unit and functional tests.
+* **Authorization**
+Job-tracker currently uses only basic JWT access tokens. Implement refresh tokens and blacklisting tokens after logout.
 * **Containerize**
 Package the application as a Docker container.
 

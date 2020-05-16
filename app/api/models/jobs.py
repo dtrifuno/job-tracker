@@ -7,6 +7,31 @@ from app.api import validators
 from app.api.models import db
 
 
+address_job_relationship_table=db.Table('address_job_relationship_table', 
+    db.Column('job_id', db.Integer,db.ForeignKey('job.id'), nullable=False),
+    db.Column('address_id',db.Integer,db.ForeignKey('address.id'), nullable=False),
+    db.PrimaryKeyConstraint('job_id', 'address_id') )
+
+education_job_relationship_table=db.Table('education_job_relationship_table', 
+    db.Column('job_id', db.Integer,db.ForeignKey('job.id'), nullable=False),
+    db.Column('education_id',db.Integer,db.ForeignKey('education.id'), nullable=False),
+    db.PrimaryKeyConstraint('job_id', 'education_id') )
+
+skill_job_relationship_table=db.Table('skill_job_relationship_table', 
+    db.Column('job_id', db.Integer,db.ForeignKey('job.id'), nullable=False),
+    db.Column('skill_id',db.Integer,db.ForeignKey('skill.id'), nullable=False),
+    db.PrimaryKeyConstraint('job_id', 'skill_id') )
+
+work_experience_job_relationship_table=db.Table('work_experience_job_relationship_table', 
+    db.Column('job_id', db.Integer,db.ForeignKey('job.id'), nullable=False),
+    db.Column('work_experience_id',db.Integer,db.ForeignKey('work_experience.id'), nullable=False),
+    db.PrimaryKeyConstraint('job_id', 'work_experience_id') )
+
+personal_project_job_relationship_table=db.Table('personal_project_job_relationship_table', 
+    db.Column('job_id', db.Integer,db.ForeignKey('job.id'), nullable=False),
+    db.Column('personal_project_id',db.Integer,db.ForeignKey('personal_project.id'), nullable=False),
+    db.PrimaryKeyConstraint('job_id', 'personal_project_id') )
+
 class Job(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     company = db.Column(db.String(50), nullable=False)
@@ -18,6 +43,12 @@ class Job(db.Model):
 
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     user = db.relationship('User', backref=db.backref("jobs", lazy=True))
+
+    address = db.relationship('Address', secondary=address_job_relationship_table, backref="jobs")
+    education = db.relationship('Education', secondary=education_job_relationship_table, backref="jobs")
+    skills = db.relationship('Skill', secondary=skill_job_relationship_table, backref="jobs")
+    projects = db.relationship('PersonalProject', secondary=personal_project_job_relationship_table, backref="jobs")
+    work_history = db.relationship('WorkExperience', secondary=work_experience_job_relationship_table, backref="jobs")
 
     @hybrid_property
     def date_created(self):
@@ -46,6 +77,9 @@ class Job(db.Model):
     @validates("url")
     def validate_url(self, key, value):
         return validators.is_url(key, value)
+
+        
+
 
 
 @functools.total_ordering

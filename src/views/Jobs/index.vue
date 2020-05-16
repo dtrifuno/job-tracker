@@ -1,68 +1,73 @@
 <template>
-  <div class="container">
-    <h2 class="mt-4 mb-2">Job Applications</h2>
-    <div class="input-group mb-1">
-      <label for="searchTableOnly" class="sr-only">Search</label>
-      <input
-        type="text"
-        class="form-control"
-        id="searchTableInput"
-        v-model="searchString"
-        placeholder="Search table..."
-      />
-      <div class="input-group-append">
-        <button class="btn btn-primary btn-sm" @click="showAddJobModal">Add Job</button>
+  <div>
+    <Bouncer bounceTo="login" />
+    <div class="container">
+      <h2 class="mt-4 mb-2">Job Applications</h2>
+      <div class="input-group mb-1">
+        <label for="searchTableOnly" class="sr-only">Search</label>
+        <input
+          type="text"
+          class="form-control"
+          id="searchTableInput"
+          v-model="searchString"
+          placeholder="Search table..."
+        />
+        <div class="input-group-append">
+          <button class="btn btn-primary btn-sm" @click="showAddJobModal">Add Job</button>
+        </div>
       </div>
+      <Spinner v-if="isLoading" />
+      <table v-else class="table table-hover table-striped table-sm table-responsive-md">
+        <thead class="thead-dark">
+          <tr>
+            <th scope="col">Company</th>
+            <th scope="col">Position</th>
+            <th scope="col">Location</th>
+            <th scope="col">Status</th>
+            <th scope="col">Updated</th>
+            <th scope="col">Created</th>
+            <th style="width: 5%" scope="col"></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr
+            v-for="job in filteredJobs"
+            v-bind:key="job.id"
+            @click="$router.push({ name:'job-details', params: job })"
+          >
+            <td>{{ job.company }}</td>
+            <td>{{ job.position }}</td>
+            <td>{{ job.location }}</td>
+            <td>{{ statusCodeToMsg(job.status) }}</td>
+            <td>{{ toLocaleDateString(job.dateUpdated) }}</td>
+            <td>{{ toLocaleDateString(job.dateCreated) }}</td>
+            <td>
+              <button
+                type="button"
+                class="btn btn-sm btn-outline-primary"
+                @click.stop="() => showDeleteModal(job)"
+                aria-label="Delete Job"
+              >
+                <i class="fas fa-trash-alt" aria-hidden="true" />
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
     </div>
-    <Spinner v-if="isLoading"/>
-    <table v-else class="table table-hover table-striped table-sm table-responsive-md">
-      <thead class="thead-dark">
-        <tr>
-          <th scope="col">Company</th>
-          <th scope="col">Position</th>
-          <th scope="col">Location</th>
-          <th scope="col">Status</th>
-          <th scope="col">Updated</th>
-          <th scope="col">Created</th>
-          <th style="width: 5%" scope="col"></th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr
-          v-for="job in filteredJobs"
-          v-bind:key="job.id"
-          @click="$router.push({ name:'job-details', params: job })"
-        >
-          <td>{{ job.company }}</td>
-          <td>{{ job.position }}</td>
-          <td>{{ job.location }}</td>
-          <td>{{ statusCodeToMsg(job.status) }}</td>
-          <td>{{ new Date(job.dateUpdated).toLocaleDateString() }}</td>
-          <td>{{ new Date(job.dateCreated).toLocaleDateString() }}</td>
-          <td>
-            <button
-              type="button"
-              class="btn btn-sm btn-outline-primary"
-              @click.stop="() => showDeleteModal(job)"
-            >
-              <i class="fas fa-trash-alt" aria-hidden="true" />
-            </button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
   </div>
 </template>
 
 <script>
 import { mapActions, mapGetters, mapMutations, mapState } from "vuex";
-import { statusCodeToMsg, debounce } from "@/utils";
+import { statusCodeToMsg, toLocaleDateString, debounce } from "@/utils";
 
+import Bouncer from "@/components/Bouncer";
 import Spinner from "@/components/Spinner";
 
 export default {
   name: "Jobs",
-  components: { Spinner },
+  components: { Bouncer, Spinner },
   data() {
     return {
       searchString: ""
@@ -73,14 +78,19 @@ export default {
     ...mapState({ isLoading: state => state.spinners.isLoadingJobs })
   },
   watch: {
-    searchString: debounce(function(newVal) {
-      this.updateJobSearchString(newVal);
-    }, 500)
+    searchString: function(newVal) {
+      this.setLoadingJobs(true);
+      debounce(function(newVal) {
+        this.updateJobSearchString(newVal);
+        this.setLoadingJobs(false);
+      }, 300).bind(this, newVal)();
+    }
   },
   methods: {
     statusCodeToMsg,
+    toLocaleDateString,
     ...mapActions(["fetchJobs", "deleteJob"]),
-    ...mapMutations(["updateJobSearchString", "toggleLoadingJobs"]),
+    ...mapMutations(["updateJobSearchString", "setLoadingJobs"]),
     showAddJobModal() {
       this.$modal.show("AddJobModal");
     },
@@ -92,9 +102,15 @@ export default {
       });
     }
   },
-  created() {
-    this.toggleLoadingJobs();
-    this.fetchJobs().finally(this.toggleLoadingJobs);
+  async created() {
+    this.setLoadingJobs(true);
+    try {
+      await this.fetchJobs();
+    } catch (err) {
+      return;
+    } finally {
+      this.setLoadingJobs(false);
+    }
   }
 };
 </script>

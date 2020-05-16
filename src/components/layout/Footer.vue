@@ -26,4 +26,10 @@ export default {
   width: 100%;
   height: 60px;
 }
+
+@media print {
+  footer {
+    display: none;
+  }
+}
 </style>

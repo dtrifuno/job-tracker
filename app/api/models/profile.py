@@ -90,6 +90,9 @@ class Address(db.Model):
     def validate_line_one(self, key, value):
         return validators.is_string(key, value, strip=True, required=True)
 
+    def __str__(self):
+        return ', '.join(line for line in (self.line_one, self.line_two, self.line_three) if line)
+
 
 class Education(db.Model):
     id = db.Column(db.Integer, primary_key=True)

@@ -1,93 +1,85 @@
 <template>
-  <div class="container">
-    <div class="row">
-      <h2 class="mt-4 mb-3">Job Details</h2>
-    </div>
-    <div class="card row">
-      <CardTitle
-        title="General"
-        buttonText="Save"
-        :buttonDisabled="spinners.isLoadingJobDetails"
-        :onClick="onClickUpdate"
-      />
-      <div class="card-body">
-        <Spinner v-if="spinners.isLoadingJobDetails" />
-        <div v-else>
-          <div class="form-group">
-            <label for="companyInput">Company</label>
-            <input type="text" class="form-control" id="companyInput" v-model="company" />
-          </div>
-          <div class="form-group">
-            <label for="positionInput">Position</label>
-            <input type="text" class="form-control" id="positionInput" v-model="position" />
-          </div>
-          <div class="form-group">
-            <label for="locationInput">Location</label>
-            <input type="text" class="form-control" id="locationInput" v-model="location" />
-          </div>
-          <div class="form-group">
-            <label for="urlInput">URL</label>
-            <input type="url" class="form-control" id="urlInput" v-model="url" />
+  <div>
+    <Bouncer bounceTo="login" />
+    <div class="container">
+      <div class="row">
+        <h2 class="mt-4 mb-3">Job Details</h2>
+      </div>
+      <div class="card row">
+        <CardTitle
+          title="General"
+          buttonText="Save"
+          :buttonDisabled="spinners.isLoadingJobDetails"
+          :onClick="onClickUpdate"
+        />
+        <div class="card-body">
+          <Spinner v-if="spinners.isLoadingJobDetails" />
+          <div v-else>
+            <div class="form-group">
+              <label for="companyInput">Company</label>
+              <input type="text" class="form-control" id="companyInput" v-model="company" />
+            </div>
+            <div class="form-group">
+              <label for="positionInput">Position</label>
+              <input type="text" class="form-control" id="positionInput" v-model="position" />
+            </div>
+            <div class="form-group">
+              <label for="locationInput">Location</label>
+              <input type="text" class="form-control" id="locationInput" v-model="location" />
+            </div>
+            <div class="form-group">
+              <label for="urlInput">URL</label>
+              <input type="url" class="form-control" id="urlInput" v-model="url" />
+            </div>
           </div>
         </div>
       </div>
-    </div>
 
-    <div class="card row">
-      <CardTitle title="Timeline" :onClick="showAddEventModal" />
-      <div class="container">
-        <Spinner v-if="spinners.isLoadingEvents" />
-        <Events v-else :events="job.events" />
-      </div>
-    </div>
-
-    <div class="card row">
-      <CardTitle
-        title="Job Description"
-        :buttonText="editDescription ? 'Save' : 'Edit'"
-        :buttonDisabled="spinners.isLoadingJobDescription"
-        :onClick="toggleDescription"
-      />
-      <div class="container">
-        <Spinner v-if="spinners.isLoadingJobDescription" />
-        <div v-else class="p-2 py-3">
-          <div class="form-group" v-if="editDescription">
-            <textarea class="form-control" rows="20" v-model="description" />
-            <small class="form-text text-muted">Use Markdown.</small>
-          </div>
-          <VueShowdown :markdown="description" v-if="!editDescription" />
+      <div class="card row">
+        <CardTitle title="Timeline" :onClick="showAddEventModal" />
+        <div class="container">
+          <Spinner v-if="spinners.isLoadingEvents" />
+          <Events v-else :events="job.events" />
         </div>
       </div>
-    </div>
 
-    <!-- Refactor into a separate component. -->
-    <div class="card row">
-      <div class="card-header">
-        <h4 class="mb-0">Customized CV</h4>
-      </div>
-      <div class="card-body">
-        <Spinner v-if="spinners.isLoadingCV" />
-        <div v-else>
-          <h2>CUSTOMIZED CV</h2>
+      <div class="card row">
+        <CardTitle
+          title="Job Description"
+          :buttonText="editDescription ? 'Save' : 'Edit'"
+          :buttonDisabled="spinners.isLoadingJobDescription"
+          :onClick="toggleDescription"
+        />
+        <div class="container">
+          <Spinner v-if="spinners.isLoadingJobDescription" />
+          <div v-else class="p-2 py-3">
+            <div class="form-group" v-if="editDescription">
+              <textarea class="form-control" rows="20" v-model="description" />
+              <small class="form-text text-muted">Use Markdown.</small>
+            </div>
+            <VueShowdown :markdown="description" v-if="!editDescription" />
+          </div>
         </div>
       </div>
-    </div>
 
-    <div class="card row">
-      <CardTitle
-        title="Cover Letter"
-        :buttonText="editCoverLetter ? 'Save' : 'Edit'"
-        :buttonDisabled="spinners.isLoadingCoverLetter"
-        :onClick="toggleCoverLetter"
-      />
-      <div class="container">
-        <Spinner v-if="spinners.isLoadingCoverLetter" />
-        <div v-else class="p-2 py-3">
-          <div class="form-group py-2" v-if="editCoverLetter">
-            <textarea class="form-control" rows="20" v-model="coverLetter" />
-            <small class="form-text text-muted">Use Markdown.</small>
+      <CustomizedCV />
+
+      <div class="card row">
+        <CardTitle
+          title="Cover Letter"
+          :buttonText="editCoverLetter ? 'Save' : 'Edit'"
+          :buttonDisabled="spinners.isLoadingCoverLetter"
+          :onClick="toggleCoverLetter"
+        />
+        <div class="container">
+          <Spinner v-if="spinners.isLoadingCoverLetter" />
+          <div v-else class="p-2 py-3">
+            <div class="form-group py-2" v-if="editCoverLetter">
+              <textarea class="form-control" rows="20" v-model="coverLetter" />
+              <small class="form-text text-muted">Use Markdown.</small>
+            </div>
+            <VueShowdown :markdown="coverLetter" v-if="!editCoverLetter" />
           </div>
-          <VueShowdown :markdown="coverLetter" v-if="!editCoverLetter" />
         </div>
       </div>
     </div>
@@ -98,13 +90,15 @@
 import { mapActions, mapMutations, mapState } from "vuex";
 import { VueShowdown } from "vue-showdown";
 
+import Bouncer from "@/components/Bouncer";
 import CardTitle from "@/components/CardTitle";
+import CustomizedCV from "./CustomizedCV";
 import Events from "./Events";
 import Spinner from "@/components/Spinner";
 
 export default {
   name: "JobDetails",
-  components: { VueShowdown, CardTitle, Events, Spinner },
+  components: { VueShowdown, Bouncer, CardTitle, CustomizedCV, Events, Spinner },
   data() {
     return {
       id: null,
@@ -125,7 +119,13 @@ export default {
     })
   },
   methods: {
-    ...mapActions(["getJob", "updateJob", "flashSuccess"]),
+    ...mapActions([
+      "getJob",
+      "getCV",
+      "getProfile",
+      "updateJob",
+      "flashSuccess"
+    ]),
     ...mapMutations([
       "setJobLoading",
       "unsetJobLoading",
@@ -222,6 +222,7 @@ export default {
     this.setJobLoading();
     this.id = this.$route.params.id;
     this.getJob(this.id)
+      .then(this.getProfile)
       .then(() => this.setDataFromObject(this.extractJobDetailsFromState()))
       .finally(this.unsetJobLoading);
   }

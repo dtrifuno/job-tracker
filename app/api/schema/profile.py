@@ -1,12 +1,11 @@
 from graphql import GraphQLError
-from graphql_relay import from_global_id
 
 import graphene
 from graphene import relay
 from graphene_sqlalchemy import SQLAlchemyConnectionField, SQLAlchemyObjectType
-from flask_graphql_auth import get_jwt_identity, query_header_jwt_required, mutation_header_jwt_required
+from flask_graphql_auth import get_jwt_identity
 
-from . import get_user
+from . import get_user, get_from_gid, query_header_jwt_required, mutation_header_jwt_required
 
 from app.api.models import db
 from app.api.models import User as UserModel, \
@@ -16,26 +15,6 @@ from app.api.models import User as UserModel, \
     Skill as SkillModel, \
     WorkExperience as WorkExperienceModel, \
     PersonalProject as PersonalProjectModel
-
-
-def get_from_gid(gid):
-    type_name, id = from_global_id(gid)
-    type_to_model = {
-        "AddressType": AddressModel,
-        "EducationType": EducationModel,
-        "SkillType": SkillModel,
-        "WorkExperienceType": WorkExperienceModel,
-        "PersonalProjectType": PersonalProjectModel
-    }
-    model = type_to_model.get(type_name, None)
-    if model is None:
-        raise GraphQLError(f"{type_name} is not a recognized GraphQL type.")
-
-    item = model.query.get(id)
-    user = get_user()
-    if item.user != user:
-        raise GraphQLError(f"{user} is not the owner of {item}.")
-    return item
 
 
 class ProfileType(SQLAlchemyObjectType):

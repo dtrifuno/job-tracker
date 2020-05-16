@@ -1,6 +1,6 @@
 from flask import Flask
 
-from flask_cors import CORS
+
 from flask_graphql import GraphQLView
 from flask_graphql_auth import GraphQLAuth
 
@@ -17,7 +17,6 @@ def create_app(config_name):
 
     db.init_app(app)
     auth = GraphQLAuth(app)
-    CORS(app)
 
     app.add_url_rule(
         "/graphql", view_func=GraphQLView.as_view("graphql", schema=schema, graphiql=True))

@@ -18,13 +18,16 @@ const authMiddleware = new ApolloLink((operation, forward) => {
   return forward(operation);
 });
 
-const logoutLink = onError(({ networkError, graphQLErrors }) => {
-  if (networkError && networkError.statusCode === 401) {
-    console.log("Invalid credentials");
-  } else if (graphQLErrors) {
-    graphQLErrors.forEach((error) =>
-      store.dispatch("flashError", error.message)
-    );
+const logoutLink = onError(({ graphQLErrors }) => {
+  if (graphQLErrors) {
+    graphQLErrors.forEach(error => {
+      if (error.message.includes("Authorization failure")) {
+        store.dispatch("flashError", "Invalid token. Please log in again.")
+        store.dispatch("logout");
+      } else {
+        store.dispatch("flashError", error.message)
+      }
+    })
   }
 });
 

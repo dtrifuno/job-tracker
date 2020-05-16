@@ -49,7 +49,8 @@ export default {
 };
 </script>
 
-<style>
+
+<style lang="scss">
 html {
   position: relative;
   min-height: 100%;

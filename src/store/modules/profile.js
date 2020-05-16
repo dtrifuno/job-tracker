@@ -7,6 +7,7 @@ import {
 } from "@/link";
 
 const state = {
+  isProfileLoaded: false,
   biographicalData: {
     firstName: "",
     lastName: "",
@@ -85,6 +86,7 @@ const actions = {
         id, projectName, url, description
       }
     `).then((res) => {
+      commit("setIsLoaded", true);
       commit("setBiographicalData", res.data.profile);
       commit("setAddresses", res.data.addresses);
       commit("setEducation", res.data.education);
@@ -227,6 +229,7 @@ const actions = {
 
 const mutations = {
   // Profile mutations
+  setIsLoaded: (state, value) => state.isProfileLoaded = value,
   setAddresses: (state, addresses) => (state.addresses = addresses),
   setEducation: (state, education) => (state.education = education),
   setSkills: (state, skills) => (state.skills = skills),

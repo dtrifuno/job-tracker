@@ -1,12 +1,8 @@
-import {
-  doQuery,
-  doDelete,
-  executeString,
-  doEditFromObject,
-} from "@/link";
+import { doQuery, doDelete, executeString, doEditFromObject } from "@/link";
 
 const state = {
   details: {
+    id: null,
     location: "",
     position: "",
     company: "",
@@ -15,6 +11,14 @@ const state = {
     description: "",
     coverLetter: "",
   },
+  cv: {
+    address: null,
+    education: [],
+    skills: [],
+    workHistory: [],
+    projects: [],
+  },
+  cvHtml: "",
 };
 
 const getters = {};
@@ -30,8 +34,8 @@ const actions = {
       commit("updateJob", res.data.editJob.job)
     );
   },
-  createEvent({ commit }, {jobId, eventData}) {
-    console.log(jobId, eventData)
+  createEvent({ commit }, { jobId, eventData }) {
+    console.log(jobId, eventData);
     return executeString(
       `mutation CreateEvent($jobId: ID!, $eventData: EventInput!) {
         createEvent(jobId: $jobId, eventData: $eventData) {
@@ -39,9 +43,7 @@ const actions = {
         }
     }`,
       { eventData, jobId }
-    )
-    .then((res) =>
-      commit("addEvent", res.data.createEvent.event))
+    ).then((res) => commit("addEvent", res.data.createEvent.event));
   },
   deleteEvent({ commit }, eventId) {
     return doDelete("event", eventId).then(() =>
@@ -51,12 +53,34 @@ const actions = {
   editEvent({ commit }, { id, eventData }) {
     return doEditFromObject("event", id, eventData).then((res) =>
       commit("updateEvent", res.data.editEvent.event)
-    )
+    );
+  },
+  getCVItems({ commit }, jobId) {
+    return doQuery(`cv(id: "${jobId}") {
+      address, education, skills, workHistory, projects
+    }`).then((res) => commit("setCV", res.data.cv));
+  },
+  getCVHTML({ commit }, jobId) {
+    return doQuery(`cvHtml(id: "${jobId}")`).then((res) =>
+      commit("setCVHTML", res.data.cvHtml)
+    );
+  },
+  selectCVItems({ commit }, { jobId, addIds, removeIds }) {
+    return executeString(
+      `mutation SelectCvItems($jobId: ID!, $addIds: [ID]!, $removeIds: [ID]!) {
+        selectCvItems(jobId: $jobId, addIds: $addIds, removeIds: $removeIds) {
+          cv { address, education, skills, workHistory, projects }
+        }
+    }`,
+      { jobId, addIds, removeIds }
+    ).then((res) => commit("setCV", res.data.selectCvItems.cv));
   },
 };
 
 const mutations = {
   updateJob: (state, job) => (state.details = { ...state.details, ...job }),
+  setCV: (state, cv) => (state.cv = cv),
+  setCVHTML: (state, cvHtml) => (state.cvHtml = cvHtml),
   addEvent: (state, event) => state.details.events.push(event),
   removeEvent: (state, eventID) =>
     (state.details.events = state.details.events.filter(

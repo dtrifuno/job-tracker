@@ -3,19 +3,40 @@
 </template>
 
 <script>
-import { mapActions } from "vuex";
+import { mapState } from "vuex";
 
 export default {
   name: "Bouncer",
-  methods: {
-    ...mapActions(["loadUser"])
+  props: {
+    bounceAuthorized: {
+      type: Boolean,
+      default: false
+    },
+    bounceTo: {
+      type: String,
+      default: "login"
+    }
+  },
+  computed: {
+    ...mapState({
+      isAuthenticated: state => state.auth.isAuthenticated
+    })
   },
   created() {
-    this.loadUser().then(() =>
+    if (this.isAuthenticated === this.bounceAuthorized) {
       this.$router.push({
-        name: "jobs"
-      })
-    );
+        name: this.bounceTo
+      });
+    }
+  },
+  watch: {
+    isAuthenticated: function(val) {
+      if (val === this.bounceAuthorized) {
+        this.$router.push({
+          name: this.bounceTo
+        });
+      }
+    }
   }
 };
 </script>

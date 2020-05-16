@@ -1,20 +1,170 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Document</title>
-</head>
-<body>
+<header class="cv-header">
+  <div class="cv-name">
+    <h1><span class="cv-first-name">{{ first_name }}</span> <span class="cv-last-name">{{ last_name }}</span></h1>
+  </div>
+  {% if address %}
+  <div class="cv-address">
+    {{ address }}
+  </div>
+  {% endif %}
+  <div class="cv-contact-line">
+    <ul class="cv-contact-list">
+      {% if phone_number %}
+      <li>
+        <i class="fas fa-phone-alt" aria-hidden="true"></i>
+        {% if phone_number.url %} 
+          <a href="{{ phone_number.url }}">{{ phone_number.number }}</a>
+        {% else %}
+          {{ phone_number.number }} 
+        {% endif %}
+       </li>
+      {% endif %}
 
-<section class="section-education">
-  <div class="section-title">Education</div>
+      {% if email %}
+      <li><i class="far fa-envelope" aria-hidden="true"></i> <a href="{{ email.url }}">{{ email.email }}</a></li>
+      {% endif %}
 
-  {% for education_experience in education %}
-  <div class="education-entry">
+      {% if website %}
+      <li><i class="fas fa-home" aria-hidden="true"></i> <a href="{{ website.url }}">{{ website.hostname }}</a></li>
+      {% endif %}
+
+      {% if github %}
+      <li><i class="fab fa-github" aria-hidden="true"></i> <a href="{{ github.url }}">{{ github.profile }}</a></li>
+      {% endif %}
+
+      {% if linkedin %}
+      <li><i class="fab fa-linkedin-in" aria-hidden="true"></i> <a href="{{ linkedin.url }}">{{ linkedin.profile }}</a></li>
+      {% endif %}
+
+    </ul>
+  </div>
+</header>
+
+<section class="cv-section cv-education-section">
+  <h3 class="cv-section-title">Skills</h3>
+  <table>
+    <tbody>
+      {% for category in skills.sorted_categories %}
+      <tr>
+        <th class="cv-category">{{ category }}</th>
+        <th>
+          <ul class="cv-skills-list">
+            {% for skill in skills.sorted_skills[category] %}
+              <li>{{ skill.skill }}</li>
+            {% endfor %}
+          </ul>
+        </th>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</section>
+
+<section class="cv-section cv-projects-section">
+  <h3 class="cv-section-title">Projects</h3>
+  {% for project in projects %}
+  <div class="cv-entry">
+    <div class="cv-entry-header">
+      <div class="cv-entry-row">
+        <span class="cv-project-name">
+          {{ project.project_name }}
+        </span>
+        <span class="cv-project-url">
+          <a href="{{ project.url }}">{{ utils.extract_hostname(project.url) }} </a>
+        </span>
+      </div>
+    </div>
+    <div class="cv-entry-description">
+    {% if project.description %}
+    <div class="cv-description">
+      <ul>
+        {% for line in project.description.split('\n') %}
+        <li>{{ line }}</li>      
+        {% endfor %}
+      </ul>
+    </div>
+    {% endif %}
+    </div>
   </div>
   {% endfor %}
 </section>
 
-</body>
-</html>
+<section class="cv-section cv-work-history-section">
+  <h3 class="cv-section-title">Work History</h3>
+  {% for job in work_history %}
+  <div class="cv-entry">
+    <div class="cv-entry-header">
+      <div class="cv-entry-row">
+        <span class="cv-company-name">
+          {{ job.company}}
+        </span>
+        <span class="cv-job-location">
+          {{ job.location }}
+        </span>
+      </div>
+      <div class="cv-entry-row">
+        <span class="cv-position-name">
+          {{ job.position }}
+        </span>
+        <span class="cv-entry-dates">
+          {{ utils.to_month_year_string(job.date_from) }} – {{ utils.to_month_year_string(job.date_to) }} 
+        </span>
+      </div>
+    </div>
+    <div class="cv-entry-description">
+    {% if job.description %}
+    <div class="cv-description">
+      <ul>
+        {% for line in job.description.split('\n') %}
+        <li>{{ line }}</li>      
+        {% endfor %}
+      </ul>
+    </div>
+    {% endif %}
+    </div>
+  </div>
+  {% endfor %}
+</section>
+
+<section class="cv-section cv-education-section">
+  <h3 class="cv-section-title">Education</h3>
+  {% for education_experience in education %}
+  <div class="cv-entry">
+    <div class="cv-entry-header">
+      <div class="cv-entry-row">
+        <span class="cv-school-name">
+          {{ education_experience.school }}
+        </span>
+        <span class="cv-school-location">
+          {{ education_experience.location}}
+        </span>
+      </div>
+      <div class="cv-entry-row">
+      <div class="cv-degree">
+        <span>
+          {% if education_experience.gpa %}
+            {{ education_experience.degree_and_field + ", " + education_experience.gpa }}
+          {% else %}
+            {{ education_experience.degree_and_field }}
+          {% endif %}
+        </span>
+      </div>
+        <span class="cv-entry-dates">
+          {{ utils.to_month_year_string(education_experience.date_from) }} – {{ utils.to_month_year_string(education_experience.date_to) }} 
+        </span>
+      </div>
+    </div>
+    <div class="cv-entry-description">
+    {% if education_experience.description %}
+    <div class="cv-description">
+      <ul>
+        {% for line in education_experience.description.split('\n') %}
+        <li>{{ line }}</li>      
+        {% endfor %}
+      </ul>
+    </div>
+    {% endif %}
+    </div>
+  </div>
+  {% endfor %}
+</section>

@@ -1,4 +1,4 @@
-export const renderMonth = (dateValue) => {
+export const toMonthYearString = (dateValue) => {
   if (!dateValue || !dateValue.trim("")) {
     return "present";
   }
@@ -54,6 +54,16 @@ export const extractAdditonalDataFromEvent = (event) => {
     return `Due on ${toLocaleDateString(event.eventDate)}.`;
   }
   return "";
+};
+
+export const addressToString = (address) => {
+  if (address) {
+    return [address.lineOne, address.lineTwo, address.lineThree]
+      .filter((x) => x)
+      .join(", ");
+  } else {
+    return "";
+  }
 };
 
 export function debounce(func, wait, immediate) {

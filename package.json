@@ -1,7 +1,19 @@
 {
   "name": "job-tracker",
   "version": "0.1.0",
+  "description": "",
+  "author": {
+    "name": "Darko Trifunovski",
+    "email": "dtrifuno@gmail.com",
+    "url": "https://trifunovski.me"
+  },
   "private": true,
+  "homepage": "https://github.com/dtrifuno/job-tracker",
+  "repository": {
+    "type" : "git",
+    "url": "https://github.com/dtrifuno/job-tracker"
+  },
+  "license": "MIT",
   "scripts": {
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
@@ -28,6 +40,8 @@
     "babel-eslint": "^10.1.0",
     "eslint": "^6.7.2",
     "eslint-plugin-vue": "^6.2.2",
+    "sass": "^1.26.5",
+    "sass-loader": "^8.0.2",
     "vue-template-compiler": "^2.6.11"
   },
   "eslintConfig": {

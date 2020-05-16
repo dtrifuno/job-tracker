@@ -77,6 +77,15 @@ export default new Router({
       },
     },
     {
+      path: "/cv",
+      name: "print-cv",
+      component: () =>
+        import(/* webpackChunkName: "print-cv" */ "./views/PrintCV.vue"),
+      beforeEnter(to, from, next) {
+        bounceUnathorizedToLogin(next);
+      },
+    },
+    {
       path: "/profile",
       name: "profile",
       component: () =>

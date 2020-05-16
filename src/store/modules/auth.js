@@ -39,6 +39,7 @@ const actions = {
     });
   },
   logout({ commit }) {
+    console.log("logout");
     localStorage.removeItem("token");
     commit("clearAuthentication");
   },
@@ -47,15 +48,19 @@ const actions = {
     commit("loading");
 
     if (token) {
-      doQuery("user { username }")
+      return doQuery("user { username }")
         .then((res) => {
           commit("setAuthentication", {
             username: res.data.user.username,
             token,
           });
         })
-        .catch(() => commit("clearAuthentication"));
+        .catch((error) => {
+          commit("clearAuthentication");
+          throw error;
+        });
     }
+    return Promise.reject(new Error("No token found."));
   },
 };
 
