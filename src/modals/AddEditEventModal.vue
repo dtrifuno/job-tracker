@@ -79,7 +79,7 @@
 </template>
 
 <script>
-import { mapActions, mapState, mapMutations } from "vuex";
+import { mapActions, mapState } from "vuex";
 
 import { statusCodeToMsg } from "@/utils";
 
@@ -122,7 +122,6 @@ export default {
   methods: {
     statusCodeToMsg,
     ...mapActions(["createEvent", "editEvent", "deleteEvent", "flashSuccess"]),
-    ...mapMutations(["toggleLoadingEvents"]),
     extractDataToObject() {
       const data = {
         date: this.date,
@@ -157,39 +156,34 @@ export default {
         this.isUpdate = true;
       } else {
         this.clearFields();
+        this.date = new Date().toISOString().split('T')[0];
         this.id = null;
         this.isUpdate = false;
       }
     },
     onClickSubmit() {
-      this.toggleLoadingEvents();
       this.createEvent({ jobId: this.jobId, eventData: this.extractDataToObject() })
         .then(() => {
           this.closeModal();
           this.flashSuccess("Event sucessfully added.");
         })
         .catch(err => err)
-        .finally(this.toggleLoadingEvents);
     },
     onClickEdit() {
-      this.toggleLoadingEvents();
       this.editEvent({ id: this.id, eventData: this.extractDataToObject() })
         .then(() => {
           this.closeModal();
           this.flashSuccess("Changes successfully saved.");
         })
         .catch(err => err)
-        .finally(this.toggleLoadingEvents);
     },
     onClickDelete() {
-      this.toggleLoadingEvents();
       this.deleteEvent(this.id)
         .then(() => {
           this.closeModal();
           this.flashSuccess("Event successfully deleted.");
         })
         .catch(err => err)
-        .finally(this.toggleLoadingEvents);
     },
     closeModal() {
       this.$modal.hide("AddEditEventModal");

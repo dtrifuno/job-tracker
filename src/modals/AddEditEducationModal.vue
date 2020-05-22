@@ -84,7 +84,7 @@
 </template>
 
 <script>
-import { mapActions, mapMutations, mapState } from "vuex";
+import { mapActions, mapState } from "vuex";
 
 import modalProps from "./modalProps";
 
@@ -116,7 +116,6 @@ export default {
       "deleteEducationExperience",
       "flashSuccess"
     ]),
-    ...mapMutations(["toggleLoadingEducation"]),
     extractDataToObject() {
       const data = {
         school: this.school,
@@ -158,7 +157,6 @@ export default {
       }
     },
     onClickSubmit() {
-      this.toggleLoadingEducation();
       this.createEducationExperience({
         educationExperienceData: this.extractDataToObject()
       })
@@ -167,10 +165,8 @@ export default {
           this.flashSuccess("Educational experience sucessfully added.");
         })
         .catch(err => err)
-        .finally(this.toggleLoadingEducation);
     },
     onClickEdit() {
-      this.toggleLoadingEducation();
       this.editEducationExperience({
         id: this.id,
         educationExperienceData: this.extractDataToObject()
@@ -180,17 +176,14 @@ export default {
           this.flashSuccess("Changes successfully saved.");
         })
         .catch(err => err)
-        .finally(this.toggleLoadingEducation);
     },
     onClickDelete() {
-      this.toggleLoadingEducation();
       this.deleteEducationExperience(this.id)
         .then(() => {
           this.closeModal();
           this.flashSuccess("Educational experience successfully deleted.");
         })
         .catch(err => err)
-        .finally(this.toggleLoadingEducation);
     },
     closeModal() {
       this.$modal.hide("AddEditEducationModal");

@@ -21,7 +21,7 @@ const actions = {
         localStorage.setItem("token", token);
         commit("setAuthentication", { username, token });
       })
-      .catch((error) => console.log(error));
+      .catch(err => err);
   },
   createUser({ commit }, { username, password }) {
     return executeString(`
@@ -39,7 +39,6 @@ const actions = {
     });
   },
   logout({ commit }) {
-    console.log("logout");
     localStorage.removeItem("token");
     commit("clearAuthentication");
   },

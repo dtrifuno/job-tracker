@@ -70,7 +70,7 @@
 </template>
 
 <script>
-import { mapActions, mapMutations, mapState } from "vuex";
+import { mapActions, mapState } from "vuex";
 
 import modalProps from "./modalProps";
 
@@ -101,7 +101,6 @@ export default {
       "deleteWorkExperience",
       "flashSuccess"
     ]),
-    ...mapMutations(["toggleLoadingWorkHistory"]),
     extractDataToObject() {
       const data = {
         position: this.position,
@@ -141,7 +140,6 @@ export default {
       }
     },
     onClickSubmit() {
-      this.toggleLoadingWorkHistory();
       this.createWorkExperience({
         workExperienceData: this.extractDataToObject()
       })
@@ -150,10 +148,8 @@ export default {
           this.flashSuccess("Work experience sucessfully added.");
         })
         .catch(err => err)
-        .finally(this.toggleLoadingWorkHistory);
     },
     onClickEdit() {
-      this.toggleLoadingWorkHistory();
       this.editWorkExperience({
         id: this.id,
         workExperienceData: this.extractDataToObject()
@@ -163,17 +159,14 @@ export default {
           this.flashSuccess("Changes successfully saved.");
         })
         .catch(err => err)
-        .finally(this.toggleLoadingWorkHistory);
     },
     onClickDelete() {
-      this.toggleLoadingWorkHistory();
       this.deleteWorkExperience(this.id)
         .then(() => {
           this.closeModal();
           this.flashSuccess("Work experience successfully deleted.");
         })
         .catch(err => err)
-        .finally(this.toggleLoadingWorkHistory);
     },
     closeModal() {
       this.$modal.hide("AddEditWorkExperienceModal");

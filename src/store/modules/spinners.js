@@ -25,77 +25,40 @@ const getters = {};
 const actions = {};
 
 const mutations = {
-  setProfileLoading: (state) => {
-    const profileIsLoading = {
-      isProfileLoaded: false,
-      isLoadingBiographical: true,
-      isLoadingAddresses: true,
-      isLoadingEducation: true,
-      isLoadingSkills: true,
-      isLoadingWorkHistory: true,
-      isLoadingPersonalProjects: true,
+  setLoadingProfile: (state, value) => {
+    state.profile = {
+      ...state.profile,
+      isLoadingBiographical: value,
+      isLoadingAddresses: value,
+      isLoadingEducation: value,
+      isLoadingSkills: value,
+      isLoadingWorkHistory: value,
+      isLoadingPersonalProjects: value,
     };
-    state.profile = { ...state.profile, ...profileIsLoading };
   },
-  setProfileLoaded: (state) => {
-    const profileIsNotLoading = {
-      isProfileLoaded: true,
-      isLoadingBiographical: false,
-      isLoadingAddresses: false,
-      isLoadingEducation: false,
-      isLoadingSkills: false,
-      isLoadingWorkHistory: false,
-      isLoadingPersonalProjects: false,
-    };
-    state.profile = { ...state.profile, ...profileIsNotLoading };
-  },
-  toggleLoadingBiographical: (state) =>
-    (state.profile.isLoadingBiographical = !state.profile
-      .isLoadingBiographical),
-  toggleLoadingAddresses: (state) =>
-    (state.profile.isLoadingAddresses = !state.profile.isLoadingAddresses),
-  toggleLoadingEducation: (state) =>
-    (state.profile.isLoadingEducation = !state.profile.isLoadingEducation),
-  toggleLoadingSkills: (state) =>
-    (state.profile.isLoadingSkills = !state.profile.isLoadingSkills),
-  toggleLoadingWorkHistory: (state) =>
-    (state.profile.isLoadingWorkHistory = !state.profile.isLoadingWorkHistory),
-  toggleLoadingPersonalProjects: (state) =>
-    (state.profile.isLoadingPersonalProjects = !state.profile
-      .isLoadingPersonalProjects),
+  setProfileLoaded: (state, value) => (state.profile.isProfileLoaded = value),
+  setLoadingBiographical: (state, value) =>
+    (state.profile.isLoadingBiographical = value),
+  setLoadingAddresses: (state, value) =>
+    (state.profile.isLoadingAddresses = value),
+  setLoadingEducation: (state, value) =>
+    (state.profile.isLoadingEducation = value),
+  setLoadingSkills: (state, value) => (state.profile.isLoadingSkills = value),
+  setLoadingWorkHistory: (state, value) =>
+    (state.profile.isLoadingWorkHistory = value),
+  setLoadingPersonalProjects: (state, value) =>
+    (state.profile.isLoadingPersonalProjects = value),
 
   setLoadingJobs: (state, value) => (state.isLoadingJobs = value),
-  toggleLoadingJobs: (state) => (state.isLoadingJobs = !state.isLoadingJobs),
 
-  unsetJobLoading: (state) => {
-    const jobIsNotLoading = {
-      isLoadingJobDetails: false,
-      isLoadingEvents: false,
-      isLoadingJobDescription: false,
-      isLoadingCV: false,
-      isLoadingCoverLetter: false,
-    };
-    state.job = { ...state.job, ...jobIsNotLoading };
-  },
-  setJobLoading: (state) => {
-    const jobIsLoading = {
-      isLoadingJobDetails: true,
-      isLoadingEvents: true,
-      isLoadingJobDescription: true,
-      isLoadingCV: true,
-      isLoadingCoverLetter: true,
-    };
-    state.job = { ...state.job, ...jobIsLoading };
-  },
-  toggleLoadingJobDetails: (state) =>
-    (state.job.isLoadingJobDetails = !state.job.isLoadingJobDetails),
-  toggleLoadingEvents: (state) =>
-    (state.job.isLoadingEvents = !state.job.isLoadingEvents),
-  toggleLoadingJobDescription: (state) =>
-    (state.job.isLoadingJobDescription = !state.job.isLoadingJobDescription),
-  toggleLoadingCV: (state) => (state.job.isLoadingCV = !state.job.isLoadingCV),
-  toggleLoadingCoverLetter: (state) =>
-    (state.job.isLoadingCoverLetter = !state.job.isLoadingCoverLetter),
+  setLoadingJobDetails: (state, value) =>
+    (state.job.isLoadingJobDetails = value),
+  setLoadingEvents: (state, value) => (state.job.isLoadingEvents = value),
+  setLoadingJobDescription: (state, value) =>
+    (state.job.isLoadingJobDescription = value),
+  setLoadingCV: (state, value) => (state.job.isLoadingCV = value),
+  setLoadingCoverLetter: (state, value) =>
+    (state.job.isLoadingCoverLetter = value),
 };
 
 export default {

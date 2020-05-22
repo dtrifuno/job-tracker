@@ -1,8 +1,8 @@
 from graphql import GraphQLError
 import graphene
 from graphene import relay
-from graphene_sqlalchemy import SQLAlchemyConnectionField, SQLAlchemyObjectType
-from flask_graphql_auth import create_access_token, create_refresh_token, query_header_jwt_required, get_jwt_identity
+from graphene_sqlalchemy import SQLAlchemyObjectType
+from flask_graphql_auth import create_access_token, query_header_jwt_required, get_jwt_identity
 
 from app.api.models import db
 from app.api.models import User as UserModel, Profile as ProfileModel

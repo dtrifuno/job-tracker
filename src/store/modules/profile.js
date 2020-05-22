@@ -7,7 +7,6 @@ import {
 } from "@/link";
 
 const state = {
-  isProfileLoaded: false,
   biographicalData: {
     firstName: "",
     lastName: "",
@@ -64,6 +63,8 @@ const getters = {
 const actions = {
   // Biographical data actions
   getProfile({ commit }) {
+    commit("setLoadingProfile", true, { root: true });
+    commit("setProfileLoaded", false, { root: true });
     return doQuery(`
       profile {
         firstName, lastName, email, phoneNumber, websiteUrl,
@@ -85,17 +86,20 @@ const actions = {
       personalProjects {
         id, projectName, url, description
       }
-    `).then((res) => {
-      commit("setIsLoaded", true);
-      commit("setBiographicalData", res.data.profile);
-      commit("setAddresses", res.data.addresses);
-      commit("setEducation", res.data.education);
-      commit("setSkills", res.data.skills);
-      commit("setWorkHistory", res.data.workHistory);
-      commit("setProjects", res.data.personalProjects);
-    });
+    `)
+      .then((res) => {
+        commit("setBiographicalData", res.data.profile);
+        commit("setAddresses", res.data.addresses);
+        commit("setEducation", res.data.education);
+        commit("setSkills", res.data.skills);
+        commit("setWorkHistory", res.data.workHistory);
+        commit("setProjects", res.data.personalProjects);
+        commit("setProfileLoaded", true, { root: true });
+      })
+      .finally(() => commit("setLoadingProfile", false, { root: true }));
   },
   editBiographicalData({ commit }, biographicalDataData) {
+    commit("setLoadingBiographical", true, { root: true });
     return executeString(
       `mutation EditBiographicalData($biographicalDataData: BiographicalDataInput!) {
         editBiographicalData(biographicalDataData: $biographicalDataData) {
@@ -103,133 +107,152 @@ const actions = {
         }
   }`,
       { biographicalDataData }
-    ).then((res) => {
-      commit("setBiographicalData", res.data.editBiographicalData.profile);
-    });
+    )
+      .then((res) => {
+        commit("setBiographicalData", res.data.editBiographicalData.profile);
+      })
+      .finally(() => commit("setLoadingBiographical", false, { root: true }));
   },
 
   // Address actions
   createAddress({ commit }, { addressData }) {
-    return doCreateFromObject("address", addressData).then((res) =>
-      commit("addAddress", res.data.createAddress.address)
-    );
+    commit("setLoadingAddresses", true, { root: true });
+    return doCreateFromObject("address", addressData)
+      .then((res) => commit("addAddress", res.data.createAddress.address))
+      .finally(() => commit("setLoadingAddresses", false, { root: true }));
   },
   editAddress({ commit }, { id, addressData }) {
-    return doEditFromObject("address", id, addressData).then((res) =>
-      commit("updateAddress", res.data.editAddress.address)
-    );
+    commit("setLoadingAddresses", true, { root: true });
+    return doEditFromObject("address", id, addressData)
+      .then((res) => commit("updateAddress", res.data.editAddress.address))
+      .finally(() => commit("setLoadingAddresses", false, { root: true }));
   },
   deleteAddress({ commit }, addressId) {
-    return doDelete("address", addressId).then(() =>
-      commit("removeAddress", addressId)
-    );
+    commit("setLoadingAddresses", true, { root: true });
+    return doDelete("address", addressId)
+      .then(() => commit("removeAddress", addressId))
+      .finally(() => commit("setLoadingAddresses", false, { root: true }));
   },
 
   // Education experience actions
   createEducationExperience({ commit }, { educationExperienceData }) {
-    return doCreateFromObject(
-      "educationExperience",
-      educationExperienceData
-    ).then((res) =>
-      commit(
-        "addEducationExperience",
-        res.data.createEducationExperience.educationExperience
+    commit("setLoadingEducation", true, { root: true });
+    return doCreateFromObject("educationExperience", educationExperienceData)
+      .then((res) =>
+        commit(
+          "addEducationExperience",
+          res.data.createEducationExperience.educationExperience
+        )
       )
-    );
+      .finally(() => commit("setLoadingEducation", false, { root: true }));
   },
   editEducationExperience({ commit }, { id, educationExperienceData }) {
-    return doEditFromObject(
-      "educationExperience",
-      id,
-      educationExperienceData
-    ).then((res) =>
-      commit(
-        "updateEducationExperience",
-        res.data.editEducationExperience.educationExperience
+    commit("setLoadingEducation", true, { root: true });
+    return doEditFromObject("educationExperience", id, educationExperienceData)
+      .then((res) =>
+        commit(
+          "updateEducationExperience",
+          res.data.editEducationExperience.educationExperience
+        )
       )
-    );
+      .finally(() => commit("setLoadingEducation", false, { root: true }));
   },
   deleteEducationExperience({ commit }, educationId) {
-    return doDelete("educationExperience", educationId).then(() =>
-      commit("removeEducationExperience", educationId)
-    );
+    commit("setLoadingEducation", true, { root: true });
+    return doDelete("educationExperience", educationId)
+      .then(() => commit("removeEducationExperience", educationId))
+      .finally(() => commit("setLoadingEducation", false, { root: true }));
   },
 
   // Skill actions
-  async createSkill({ commit }, { skillData }) {
-    return doCreateFromObject("skill", skillData).then((res) =>
-      commit("addSkill", res.data.createSkill.skill)
-    );
+  createSkill({ commit }, { skillData }) {
+    commit("setLoadingSkills", true, { root: true });
+    return doCreateFromObject("skill", skillData)
+      .then((res) => commit("addSkill", res.data.createSkill.skill))
+      .finally(() => commit("setLoadingSkills", false, { root: true }));
   },
-  async editSkill({ commit }, { id, skillData }) {
-    return doEditFromObject("skill", id, skillData).then((res) =>
-      commit("updateSkill", res.data.editSkill.skill)
-    );
+  editSkill({ commit }, { id, skillData }) {
+    commit("setLoadingSkills", true, { root: true });
+    return doEditFromObject("skill", id, skillData)
+      .then((res) => commit("updateSkill", res.data.editSkill.skill))
+      .finally(() => commit("setLoadingSkills", false, { root: true }));
   },
-  async deleteSkill({ commit }, skillId) {
-    return doDelete("skill", skillId).then(() =>
-      commit("removeSkill", skillId)
-    );
+  deleteSkill({ commit }, skillId) {
+    commit("setLoadingSkills", true, { root: true });
+    return doDelete("skill", skillId)
+      .then(() => commit("removeSkill", skillId))
+      .finally(() => commit("setLoadingSkills", false, { root: true }));
   },
 
   // Work experience actions
-  async createWorkExperience({ commit }, { workExperienceData }) {
-    return doCreateFromObject(
-      "workExperience",
-      workExperienceData
-    ).then((res) =>
-      commit("addWorkExperience", res.data.createWorkExperience.workExperience)
-    );
+  createWorkExperience({ commit }, { workExperienceData }) {
+    commit("setLoadingWorkHistory", true, { root: true });
+    return doCreateFromObject("workExperience", workExperienceData)
+      .then((res) =>
+        commit(
+          "addWorkExperience",
+          res.data.createWorkExperience.workExperience
+        )
+      )
+      .finally(() => commit("setLoadingWorkHistory", false, { root: true }));
   },
-  async editWorkExperience({ commit }, { id, workExperienceData }) {
-    return doEditFromObject(
-      "workExperience",
-      id,
-      workExperienceData
-    ).then((res) =>
-      commit("updateWorkExperience", res.data.editWorkExperience.workExperience)
-    );
+  editWorkExperience({ commit }, { id, workExperienceData }) {
+    commit("setLoadingWorkHistory", true, { root: true });
+    return doEditFromObject("workExperience", id, workExperienceData)
+      .then((res) =>
+        commit(
+          "updateWorkExperience",
+          res.data.editWorkExperience.workExperience
+        )
+      )
+      .finally(() => commit("setLoadingWorkHistory", false, { root: true }));
   },
-  async deleteWorkExperience({ commit }, workId) {
-    return doDelete("workExperience", workId).then(() =>
-      commit("removeWorkExperience", workId)
-    );
+  deleteWorkExperience({ commit }, workId) {
+    commit("setLoadingWorkHistory", true, { root: true });
+    return doDelete("workExperience", workId)
+      .then(() => commit("removeWorkExperience", workId))
+      .finally(() => commit("setLoadingWorkHistory", false, { root: true }));
   },
 
   // Personal projects actions
-  async createPersonalProject({ commit }, { personalProjectData }) {
-    return doCreateFromObject(
-      "personalProject",
-      personalProjectData
-    ).then((res) =>
-      commit(
-        "addPersonalProject",
-        res.data.createPersonalProject.personalProject
+  createPersonalProject({ commit }, { personalProjectData }) {
+    commit("setLoadingPersonalProjects", true, { root: true });
+    return doCreateFromObject("personalProject", personalProjectData)
+      .then((res) =>
+        commit(
+          "addPersonalProject",
+          res.data.createPersonalProject.personalProject
+        )
       )
-    );
+      .finally(() =>
+        commit("setLoadingPersonalProjects", false, { root: true })
+      );
   },
-  async editPersonalProject({ commit }, { id, personalProjectData }) {
-    return doEditFromObject(
-      "personalProject",
-      id,
-      personalProjectData
-    ).then((res) =>
-      commit(
-        "updatePersonalProject",
-        res.data.editPersonalProject.personalProject
+  editPersonalProject({ commit }, { id, personalProjectData }) {
+    commit("setLoadingPersonalProjects", true, { root: true });
+    return doEditFromObject("personalProject", id, personalProjectData)
+      .then((res) =>
+        commit(
+          "updatePersonalProject",
+          res.data.editPersonalProject.personalProject
+        )
       )
-    );
+      .finally(() =>
+        commit("setLoadingPersonalProjects", false, { root: true })
+      );
   },
-  async deletePersonalProject({ commit }, projectId) {
-    return doDelete("personalProject", projectId).then(() =>
-      commit("removePersonalProject", projectId)
-    );
+  deletePersonalProject({ commit }, projectId) {
+    commit("setLoadingPersonalProjects", true, { root: true });
+    return doDelete("personalProject", projectId)
+      .then(() => commit("removePersonalProject", projectId))
+      .finally(() =>
+        commit("setLoadingPersonalProjects", false, { root: true })
+      );
   },
 };
 
 const mutations = {
   // Profile mutations
-  setIsLoaded: (state, value) => state.isProfileLoaded = value,
   setAddresses: (state, addresses) => (state.addresses = addresses),
   setEducation: (state, education) => (state.education = education),
   setSkills: (state, skills) => (state.skills = skills),

@@ -52,7 +52,7 @@
 </template>
 
 <script>
-import { mapActions, mapMutations, mapState } from "vuex";
+import { mapActions, mapState } from "vuex";
 
 import modalProps from "./modalProps";
 
@@ -80,7 +80,6 @@ export default {
       "deleteAddress",
       "flashSuccess"
     ]),
-    ...mapMutations(["toggleLoadingAddresses"]),
     extractDataToObject() {
       const data = {
         lineOne: this.lineOne,
@@ -114,33 +113,27 @@ export default {
       }
     },
     onClickSubmit() {
-      this.toggleLoadingAddresses();
       this.createAddress({ addressData: this.extractDataToObject() })
         .then(() => {
           this.closeModal();
           this.flashSuccess("Address successfully added.");
         }).catch(err => err)
-        .finally(this.toggleLoadingAddresses);
     },
     onClickEdit() {
-      this.toggleLoadingAddresses();
       this.editAddress({ id: this.id, addressData: this.extractDataToObject() })
         .then(() => {
           this.closeModal();
           this.flashSuccess("Changes successfully saved.");
         })
         .catch(err => err)
-        .finally(this.toggleLoadingAddresses);
     },
     onClickDelete() {
-      this.toggleLoadingAddresses();
       this.deleteAddress(this.id)
         .then(() => {
           this.closeModal();
           this.flashSuccess("Address successfully deleted.");
         })
         .catch(err => err)
-        .finally(this.toggleLoadingAddresses);
     },
     closeModal() {
       this.$modal.hide("AddEditAddressModal");

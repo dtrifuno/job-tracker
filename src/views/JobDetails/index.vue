@@ -52,53 +52,45 @@
         />
         <div class="container">
           <Spinner v-if="spinners.isLoadingJobDescription" />
-          <div v-else class="p-2 py-3">
+          <div v-else class="p-3 py-4">
             <div class="form-group" v-if="editDescription">
               <textarea class="form-control" rows="20" v-model="description" />
               <small class="form-text text-muted">Use Markdown.</small>
             </div>
-            <VueShowdown :markdown="description" v-if="!editDescription" />
-          </div>
-        </div>
-      </div>
-
-      <CustomizedCV />
-
-      <div class="card row">
-        <CardTitle
-          title="Cover Letter"
-          :buttonText="editCoverLetter ? 'Save' : 'Edit'"
-          :buttonDisabled="spinners.isLoadingCoverLetter"
-          :onClick="toggleCoverLetter"
-        />
-        <div class="container">
-          <Spinner v-if="spinners.isLoadingCoverLetter" />
-          <div v-else class="p-2 py-3">
-            <div class="form-group py-2" v-if="editCoverLetter">
-              <textarea class="form-control" rows="20" v-model="coverLetter" />
-              <small class="form-text text-muted">Use Markdown.</small>
+            <div v-if="!editDescription">
+              <div v-html="job.descriptionHtml" />
             </div>
-            <VueShowdown :markdown="coverLetter" v-if="!editCoverLetter" />
           </div>
         </div>
       </div>
+
+      <CustomizedCV :jobId="id"/>
+
+      <CoverLetter :jobId="id"/>
     </div>
   </div>
 </template>
 
 <script>
-import { mapActions, mapMutations, mapState } from "vuex";
-import { VueShowdown } from "vue-showdown";
+import { mapActions, mapState } from "vuex";
 
 import Bouncer from "@/components/Bouncer";
-import CardTitle from "@/components/CardTitle";
-import CustomizedCV from "./CustomizedCV";
-import Events from "./Events";
 import Spinner from "@/components/Spinner";
+import CardTitle from "@/components/CardTitle";
+import Events from "./Events";
+import CustomizedCV from "./CustomizedCV";
+import CoverLetter from "./CoverLetter";
 
 export default {
   name: "JobDetails",
-  components: { VueShowdown, Bouncer, CardTitle, CustomizedCV, Events, Spinner },
+  components: {
+    Bouncer,
+    CardTitle,
+    CustomizedCV,
+    CoverLetter,
+    Events,
+    Spinner
+  },
   data() {
     return {
       id: null,
@@ -107,15 +99,14 @@ export default {
       location: "",
       url: "",
       description: "",
-      editDescription: false,
-      coverLetter: "",
-      editCoverLetter: false
+      editDescription: false
     };
   },
   computed: {
     ...mapState({
       job: state => state.jobDetails.details,
-      spinners: state => state.spinners.job
+      spinners: state => state.spinners.job,
+      isProfileLoaded: state => state.spinners.profile.isProfileLoaded
     })
   },
   methods: {
@@ -124,14 +115,8 @@ export default {
       "getCV",
       "getProfile",
       "updateJob",
+      "updateJobDescription",
       "flashSuccess"
-    ]),
-    ...mapMutations([
-      "setJobLoading",
-      "unsetJobLoading",
-      "toggleLoadingJobDetails",
-      "toggleLoadingJobDescription",
-      "toggleLoadingCoverLetter"
     ]),
     extractDataToObject() {
       const data = {
@@ -148,8 +133,7 @@ export default {
         position: this.job.position,
         location: this.job.location,
         url: this.job.url,
-        description: this.job.description,
-        coverLetter: this.job.coverLetter
+        description: this.job.description
       };
       return jobDetails;
     },
@@ -164,78 +148,51 @@ export default {
         position: "",
         location: "",
         url: "",
-        description: "",
-        coverLetter: ""
+        description: ""
       };
       this.setDataFromObject(clearData);
     },
     onClickUpdate() {
-      this.toggleLoadingJobDetails();
       this.updateJob({
         jobData: this.extractDataToObject(),
         id: this.id
-      })
-        .then(() => {
-          this.setDataFromObject(this.extractJobDetailsFromState());
-          this.flashSuccess("Changes successfully saved.");
-        })
-        .finally(this.toggleLoadingJobDetails);
+      }).then(() => {
+        this.setDataFromObject(this.extractJobDetailsFromState());
+        this.flashSuccess("Changes successfully saved.");
+      });
     },
     toggleDescription() {
       if (this.editDescription) {
-        this.toggleLoadingJobDescription();
-        this.updateJob({
-          jobData: { description: this.description },
+        this.updateJobDescription({
+          description: this.description,
           id: this.id
-        })
-          .then(() => {
-            this.flashSuccess("Changes successfully saved.");
-            this.editDescription = !this.editDescription;
-          })
-          .finally(this.toggleLoadingJobDescription);
+        }).then(() => {
+          this.flashSuccess("Changes successfully saved.");
+          this.editDescription = !this.editDescription;
+        });
       } else {
         this.editDescription = !this.editDescription;
       }
     },
-    toggleCoverLetter() {
-      if (this.editCoverLetter) {
-        this.toggleLoadingCoverLetter();
-        this.updateJob({
-          jobData: { coverLetter: this.coverLetter },
-          id: this.id
-        })
-          .then(() => {
-            this.flashSuccess("Changes successfully saved.");
-            this.editCoverLetter = !this.editCoverLetter;
-          })
-          .finally(this.toggleLoadingCoverLetter);
-      } else {
-        this.editCoverLetter = !this.editCoverLetter;
-      }
-    },
+
     showAddEventModal() {
       this.$modal.show("AddEditEventModal");
     }
   },
   created() {
-    this.clearFields();
-    this.setJobLoading();
     this.id = this.$route.params.id;
-    this.getJob(this.id)
-      .then(this.getProfile)
-      .then(() => this.setDataFromObject(this.extractJobDetailsFromState()))
-      .finally(this.unsetJobLoading);
+    this.clearFields();
+    if (this.id && this.id === this.job.id) {
+      this.setDataFromObject(this.extractJobDetailsFromState())
+    } else if (!this.isProfileLoaded) {
+      this.getProfile()
+        .then(() => this.getJob(this.id))
+        .then(() => this.setDataFromObject(this.extractJobDetailsFromState()));
+    } else {
+      this.getJob(this.id).then(() =>
+        this.setDataFromObject(this.extractJobDetailsFromState())
+      );
+    }
   }
 };
 </script>
-
-<style scoped>
-.card {
-  margin-bottom: 0.6rem;
-}
-
-h2,
-.card-header {
-  user-select: none;
-}
-</style>

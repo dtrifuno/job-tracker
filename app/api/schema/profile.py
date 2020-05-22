@@ -2,11 +2,10 @@ from graphql import GraphQLError
 
 import graphene
 from graphene import relay
-from graphene_sqlalchemy import SQLAlchemyConnectionField, SQLAlchemyObjectType
+from graphene_sqlalchemy import SQLAlchemyObjectType
 from flask_graphql_auth import get_jwt_identity
 
 from . import get_user, get_from_gid, query_header_jwt_required, mutation_header_jwt_required
-
 from app.api.models import db
 from app.api.models import User as UserModel, \
     Profile as ProfileModel, \

@@ -1,44 +1,4 @@
-<header class="cv-header">
-  <div class="cv-name">
-    <h1><span class="cv-first-name">{{ first_name }}</span> <span class="cv-last-name">{{ last_name }}</span></h1>
-  </div>
-  {% if address %}
-  <div class="cv-address">
-    {{ address }}
-  </div>
-  {% endif %}
-  <div class="cv-contact-line">
-    <ul class="cv-contact-list">
-      {% if phone_number %}
-      <li>
-        <i class="fas fa-phone-alt" aria-hidden="true"></i>
-        {% if phone_number.url %} 
-          <a href="{{ phone_number.url }}">{{ phone_number.number }}</a>
-        {% else %}
-          {{ phone_number.number }} 
-        {% endif %}
-       </li>
-      {% endif %}
-
-      {% if email %}
-      <li><i class="far fa-envelope" aria-hidden="true"></i> <a href="{{ email.url }}">{{ email.email }}</a></li>
-      {% endif %}
-
-      {% if website %}
-      <li><i class="fas fa-home" aria-hidden="true"></i> <a href="{{ website.url }}">{{ website.hostname }}</a></li>
-      {% endif %}
-
-      {% if github %}
-      <li><i class="fab fa-github" aria-hidden="true"></i> <a href="{{ github.url }}">{{ github.profile }}</a></li>
-      {% endif %}
-
-      {% if linkedin %}
-      <li><i class="fab fa-linkedin-in" aria-hidden="true"></i> <a href="{{ linkedin.url }}">{{ linkedin.profile }}</a></li>
-      {% endif %}
-
-    </ul>
-  </div>
-</header>
+{{ header_html }}
 
 <section class="cv-section cv-education-section">
   <h3 class="cv-section-title">Skills</h3>

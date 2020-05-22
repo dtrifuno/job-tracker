@@ -1,16 +1,12 @@
-import re
-
-from flask import render_template
 from flask_graphql_auth import get_jwt_identity
 import graphene
 from graphql import GraphQLError
 from graphql_relay import to_global_id
 from graphene import relay
-from graphene_sqlalchemy import SQLAlchemyConnectionField, SQLAlchemyObjectType
+from graphene_sqlalchemy import SQLAlchemyObjectType
 
 from app.api.models import db
 from app.api.models import Job as JobModel, Event as EventModel
-from app.api.utils import extract_github_profile, extract_hostname, extract_linkedin_profile, to_month_year_string, group_skills
 from . import get_user, get_from_gid, query_header_jwt_required, mutation_header_jwt_required
 
 
@@ -36,6 +32,19 @@ class CVType(graphene.ObjectType):
     projects = graphene.List(graphene.ID)
 
 
+class CoverLetterType(graphene.ObjectType):
+    recipient_name = graphene.String()
+    line_one = graphene.String()
+    line_two = graphene.String()
+    line_three = graphene.String()
+    city = graphene.String()
+    date = graphene.String()
+    subject_line = graphene.String()
+    opening_salutation = graphene.String()
+    cover_letter_body = graphene.String()
+    closing_salutation = graphene.String()
+
+
 def _extract_cv(job):
     result = CVType(
         education=[to_global_id("EducationType", school.id)
@@ -51,11 +60,32 @@ def _extract_cv(job):
     return result
 
 
+def _extract_cover_letter(job):
+    result = CoverLetterType(**{
+        field: getattr(job, field, "") for field in ("recipient_name",
+                                                 "line_one",
+                                                 "line_two",
+                                                 "line_three",
+                                                 "city",
+                                                 "date",
+                                                 "subject_line",
+                                                 "opening_salutation",
+                                                 "cover_letter_body",
+                                                 "closing_salutation")
+    })
+    return result
+
+
 class Query(graphene.ObjectType):
     jobs = graphene.List(JobType)
     job = graphene.Field(JobType, args={"id": graphene.ID(required=True)})
+    description_html = graphene.String(args={"id": graphene.ID(required=True)})
     cv = graphene.Field(CVType, args={"id": graphene.ID(required=True)})
     cv_html = graphene.String(args={"id": graphene.ID(required=True)})
+    cover_letter = graphene.Field(
+        CoverLetterType, args={"id": graphene.ID(required=True)})
+    cover_letter_html = graphene.String(
+        args={"id": graphene.ID(required=True)})
 
     @query_header_jwt_required
     def resolve_jobs(self, info):
@@ -68,72 +98,29 @@ class Query(graphene.ObjectType):
         return job
 
     @query_header_jwt_required
+    def resolve_description_html(self, info, id):
+        job = get_from_gid(id)
+        return job.description_html
+
+    @query_header_jwt_required
     def resolve_cv(self, info, id):
         job = get_from_gid(id)
         return _extract_cv(job)
 
     @query_header_jwt_required
     def resolve_cv_html(self, info, id):
-        user = get_user()
         job = get_from_gid(id)
+        return job.cv_html
 
-        profile = user.profile
-        kwargs = {
-            "first_name": profile.first_name,
-            "last_name": profile.last_name
-        }
+    @query_header_jwt_required
+    def resolve_cover_letter(self, info, id):
+        job = get_from_gid(id)
+        return _extract_cover_letter(job)
 
-        if profile.email:
-            kwargs["email"] = {
-                "url": f"mailto:{profile.email}",
-                "email": profile.email
-            }
-
-        if profile.phone_number:
-            number = profile.phone_number
-            if re.match(r"^\d{10}$", number):
-                kwargs["phone_number"] = {
-                    "number": f"({number[:3]}) {number[3:6]}-{number[6:]}",
-                    "url": f"tel:+1{number}"
-                }
-            else:
-                kwargs["phone_number"] = {
-                    "number": number
-                }
-
-        if profile.website_url:
-            kwargs["website"] = {
-                "url": profile.website_url,
-                "hostname": extract_hostname(profile.website_url)
-            }
-
-        if profile.github_url:
-            kwargs["github"] = {
-                "url": profile.github_url,
-                "profile": extract_github_profile(profile.github_url)
-            }
-
-        if profile.linkedin_url:
-            kwargs["linkedin"] = {
-                "url": profile.linkedin_url,
-                "profile": extract_linkedin_profile(profile.linkedin_url)
-            }
-
-        if job.address:
-            address = job.address[0]
-            kwargs["address"] = str(address)
-
-        kwargs["education"] = sorted(job.education, key=lambda x: x.date_from)
-        kwargs["skills"] = group_skills(job.skills)
-        kwargs["work_history"] = job.work_history
-        kwargs["projects"] = job.projects
-
-        kwargs["utils"] = {
-            "to_month_year_string": to_month_year_string,
-            "extract_hostname": extract_hostname
-        }
-
-        return render_template("cv.html", **kwargs)
+    @query_header_jwt_required
+    def resolve_cover_letter_html(self, info, id):
+        job = get_from_gid(id)
+        return job.cover_letter_html
 
 
 class JobInput(graphene.InputObjectType):
@@ -142,7 +129,6 @@ class JobInput(graphene.InputObjectType):
     location = graphene.String()
     url = graphene.String()
     description = graphene.String()
-    cover_letter = graphene.String()
 
 
 class CreateJob(graphene.Mutation):
@@ -254,13 +240,14 @@ class DeleteEvent(graphene.Mutation):
         return DeleteJob(ok=True)
 
 
-class SelectCVItems(graphene.Mutation):
+class UpdateCV(graphene.Mutation):
     class Arguments:
         job_id = graphene.ID(required=True)
         add_ids = graphene.List(graphene.ID, required=True)
         remove_ids = graphene.List(graphene.ID, required=True)
 
     cv = graphene.Field(CVType)
+    cv_html = graphene.String()
 
     @mutation_header_jwt_required
     def mutate(root, info, job_id, add_ids, remove_ids):
@@ -276,7 +263,36 @@ class SelectCVItems(graphene.Mutation):
 
         db.session.commit()
         cv = _extract_cv(job)
-        return SelectCVItems()
+        return UpdateCV(cv=cv, cv_html=job.cv_html)
+
+
+class CoverLetterInput(graphene.InputObjectType):
+    recipient_name = graphene.String()
+    line_one = graphene.String()
+    line_two = graphene.String()
+    line_three = graphene.String()
+    city = graphene.String()
+    date = graphene.String()
+    subject_line = graphene.String()
+    opening_salutation = graphene.String()
+    cover_letter_body = graphene.String()
+    closing_salutation = graphene.String()
+
+
+class UpdateCoverLetter(graphene.Mutation):
+    class Arguments:
+        job_id = graphene.ID(required=True)
+        cover_letter_data = CoverLetterInput(required=True)
+
+    cover_letter = graphene.Field(CoverLetterType)
+    cover_letter_html = graphene.String()
+
+    @mutation_header_jwt_required
+    def mutate(root, info, job_id, cover_letter_data):
+        job = get_from_gid(job_id)
+        job.update(cover_letter_data)
+        db.session.commit()
+        return UpdateCoverLetter(cover_letter=_extract_cover_letter(job), cover_letter_html=job.cover_letter_html)
 
 
 class Mutation(graphene.ObjectType):
@@ -286,4 +302,5 @@ class Mutation(graphene.ObjectType):
     create_event = CreateEvent.Field()
     edit_event = EditEvent.Field()
     delete_event = DeleteEvent.Field()
-    select_cv_items = SelectCVItems.Field()
+    update_cv = UpdateCV.Field()
+    update_cover_letter = UpdateCoverLetter.Field()

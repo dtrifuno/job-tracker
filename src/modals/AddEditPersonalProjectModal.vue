@@ -51,7 +51,7 @@
 </template>
 
 <script>
-import { mapActions, mapMutations, mapState } from "vuex";
+import { mapActions, mapState } from "vuex";
 
 import modalProps from "./modalProps";
 
@@ -79,7 +79,6 @@ export default {
       "deletePersonalProject",
       "flashSuccess"
     ]),
-    ...mapMutations(["toggleLoadingPersonalProjects"]),
     extractDataToObject() {
       const data = {
         projectName: this.projectName,
@@ -113,7 +112,6 @@ export default {
       }
     },
     onClickSubmit() {
-      this.toggleLoadingPersonalProjects();
       this.createPersonalProject({
         personalProjectData: this.extractDataToObject()
       })
@@ -122,10 +120,8 @@ export default {
           this.flashSuccess("Personal project sucessfully added.");
         })
         .catch(err => err)
-        .finally(this.toggleLoadingPersonalProjects);
     },
     onClickEdit() {
-      this.toggleLoadingPersonalProjects();
       this.editPersonalProject({
         id: this.id,
         personalProjectData: this.extractDataToObject()
@@ -135,17 +131,14 @@ export default {
           this.flashSuccess("Changes successfully saved.");
         })
         .catch(err => err)
-        .finally(this.toggleLoadingPersonalProjects);
     },
     onClickDelete() {
-      this.toggleLoadingPersonalProjects();
       this.deletePersonalProject(this.id)
         .then(() => {
           this.closeModal();
           this.flashSuccess("Personal project successfully deleted.");
         })
         .catch(err => err)
-        .finally(this.toggleLoadingPersonalProjects);
     },
     closeModal() {
       this.$modal.hide("AddEditPersonalProjectModal");

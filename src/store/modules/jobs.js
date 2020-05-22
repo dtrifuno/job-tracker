@@ -1,11 +1,32 @@
 import { doQuery, doDelete, executeString } from "@/link";
+import { compareStatusCodes } from "@/utils";
 
 const state = {
   jobs: [],
+  sortBy: {
+    key: "dateCreated",
+    ascending: false,
+  },
   jobSearchString: "",
 };
 
 const getters = {
+  sortedAndFilteredJobs: (state, getters) => {
+    const { key, ascending } = state.sortBy;
+    const sortedJobs = [...getters.filteredJobs]
+    if (key === "status") {
+      sortedJobs.sort((a, b) => compareStatusCodes(a.status, b.status))
+    } else {
+      sortedJobs.sort((a, b) => a[key].localeCompare(b[key]))
+    }
+
+    if (!ascending) {
+      sortedJobs.reverse();
+    }
+    return sortedJobs;
+    
+  },
+
   filteredJobs: (state) => {
     const { jobSearchString } = state;
     const fragments = jobSearchString.toLowerCase().split(/[\s,]+/);
@@ -33,6 +54,14 @@ const actions = {
       commit("setJobs", res.data.jobs);
     });
   },
+  sortTableBy({ commit, state }, category) {
+    const sortBy = {
+      key: category,
+      ascending:
+        state.sortBy.key !== category ? true : !state.sortBy.ascending,
+    };
+    commit("setSortBy", sortBy);
+  },
   createJob({ commit }, { date, jobData }) {
     return executeString(
       `mutation CreateJob($date: String!, $jobData: JobInput!) {
@@ -49,7 +78,8 @@ const actions = {
 };
 
 const mutations = {
-  setJobs: (state, jobs) => state.jobs = jobs,
+  setJobs: (state, jobs) => (state.jobs = jobs),
+  setSortBy: (state, sortBy) => (state.sortBy = sortBy),
   updateJobSearchString: (state, newJobSearchString) =>
     (state.jobSearchString = newJobSearchString),
   addJob: (state, job) => state.jobs.unshift(job),

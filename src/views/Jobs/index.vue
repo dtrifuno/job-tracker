@@ -20,18 +20,18 @@
       <table v-else class="table table-hover table-striped table-sm table-responsive-md">
         <thead class="thead-dark">
           <tr>
-            <th scope="col">Company</th>
-            <th scope="col">Position</th>
-            <th scope="col">Location</th>
-            <th scope="col">Status</th>
-            <th scope="col">Updated</th>
-            <th scope="col">Created</th>
+            <TableHeading title="Company" category="company" />
+            <TableHeading title="Position" category="position" />
+            <TableHeading title="Location" category="location" />
+            <TableHeading title="status" category="status" />
+            <TableHeading title="Updated" category="dateUpdated" />
+            <TableHeading title="Created" category="dateCreated" />
             <th style="width: 5%" scope="col"></th>
           </tr>
         </thead>
         <tbody>
           <tr
-            v-for="job in filteredJobs"
+            v-for="job in sortedAndFilteredJobs"
             v-bind:key="job.id"
             @click="$router.push({ name:'job-details', params: job })"
           >
@@ -64,17 +64,18 @@ import { statusCodeToMsg, toLocaleDateString, debounce } from "@/utils";
 
 import Bouncer from "@/components/Bouncer";
 import Spinner from "@/components/Spinner";
+import TableHeading from "./TableHeading";
 
 export default {
   name: "Jobs",
-  components: { Bouncer, Spinner },
+  components: { Bouncer, Spinner, TableHeading },
   data() {
     return {
       searchString: ""
     };
   },
   computed: {
-    ...mapGetters(["filteredJobs"]),
+    ...mapGetters(["sortedAndFilteredJobs"]),
     ...mapState({ isLoading: state => state.spinners.isLoadingJobs })
   },
   watch: {
@@ -102,15 +103,8 @@ export default {
       });
     }
   },
-  async created() {
-    this.setLoadingJobs(true);
-    try {
-      await this.fetchJobs();
-    } catch (err) {
-      return;
-    } finally {
-      this.setLoadingJobs(false);
-    }
+  created() {
+    this.fetchJobs().catch(err => err);
   }
 };
 </script>

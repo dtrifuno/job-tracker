@@ -1,0 +1,50 @@
+{{ header_html }}
+
+<div class="cl-container">
+
+{% if recipient %}
+<div class="cl-recipient-box">
+  {% for line in recipient %}
+  <div class="cl-recipient-line">
+    {{ line }}
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+{% if city_and_date %}
+<div class="cl-city-and-date-container">
+  <div class="cl-city-and-date-content">
+    {{ city_and_date }}
+  </div>
+</div>
+{% endif %}
+
+{% if subject_line %}
+<div class="cl-subject-line">
+  Subject: {{ subject_line }}
+</div>
+{% endif %}
+
+{% if opening_salutation %}
+<div class="cl-opening-salutation">
+  {{ opening_salutation }}
+</div>
+{% endif %}
+
+{% if cover_letter_body_html %}
+{{ cover_letter_body_html }}
+{% endif %}
+
+{% if closing_salutation and name %}
+<div class="cl-closing-salutation-container">
+  <div class="cl-closing-salutation">
+    {{ closing_salutation }}
+  </div>
+
+  <div class="cl-closing-name">
+    {{ name }}
+  </div>
+</div>
+{% endif %}
+</div>

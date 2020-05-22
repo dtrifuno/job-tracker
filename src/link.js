@@ -34,7 +34,6 @@ const logoutLink = onError(({ graphQLErrors }) => {
 const link = logoutLink.concat(concat(authMiddleware, httpLink));
 
 export const executeString = (query, variables = {}) => {
-  console.log(query);
   const operation = {
     query: gql`
       ${query}

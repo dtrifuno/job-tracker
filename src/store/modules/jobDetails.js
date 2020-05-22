@@ -9,7 +9,7 @@ const state = {
     url: "",
     events: [],
     description: "",
-    coverLetter: "",
+    descriptionHtml: "",
   },
   cv: {
     address: null,
@@ -19,23 +19,62 @@ const state = {
     projects: [],
   },
   cvHtml: "",
+  coverLetter: {
+    recipientName: "",
+    lineOne: "",
+    lineTwo: "",
+    lineThree: "",
+    city: "",
+    date: "",
+    subjectLine: "",
+    openingSalutation: "",
+    coverLetterBody: "",
+    closingSalutation: "",
+  },
+  coverLetterHtml: "",
 };
 
 const getters = {};
 
 const actions = {
   getJob({ commit }, jobId) {
+    commit("setLoadingJobDetails", true, { root: true });
+    commit("setLoadingJobDescription", true, { root: true });
+    commit("setLoadingEvents", true, { root: true });
     return doQuery(`job(id: "${jobId}") {
-        id, company, position, location, url, description, coverLetter, events { id, date, eventType, eventDate, comment }
-    }`).then((res) => commit("updateJob", res.data.job));
+        id, company, position, location, url, description, descriptionHtml,
+        events {
+           id, date, eventType, eventDate, comment
+          }
+        }`)
+      .then((res) => commit("updateJob", res.data.job))
+      .finally(() => {
+        commit("setLoadingJobDetails", false, { root: true });
+        commit("setLoadingJobDescription", false, { root: true });
+        commit("setLoadingEvents", false, { root: true });
+      });
   },
   updateJob({ commit }, { id, jobData }) {
-    return doEditFromObject("job", id, jobData).then((res) =>
-      commit("updateJob", res.data.editJob.job)
-    );
+    commit("setLoadingJobDetails", true, { root: true });
+    return doEditFromObject("job", id, jobData)
+      .then((res) => commit("updateJob", res.data.editJob.job))
+      .finally(() => commit("setLoadingJobDetails", false, { root: true }));
+  },
+  updateJobDescription({ commit }, { id, description }) {
+    commit("setLoadingJobDescription", true, { root: true });
+    return executeString(
+      `mutation EditJob($id: ID!, $jobData: JobInput!) {
+        editJob(id: $id, jobData: $jobData) {
+          job { description, descriptionHtml }
+        }
+    }`,
+      { id, jobData: { description } }
+    )
+      .then((res) => commit("updateJob", res.data.editJob.job))
+      .finally(() => commit("setLoadingJobDescription", false, { root: true }));
   },
   createEvent({ commit }, { jobId, eventData }) {
-    console.log(jobId, eventData);
+    commit("setLoadingEvents", true, { root: true });
     return executeString(
       `mutation CreateEvent($jobId: ID!, $eventData: EventInput!) {
         createEvent(jobId: $jobId, eventData: $eventData) {
@@ -43,44 +82,100 @@ const actions = {
         }
     }`,
       { eventData, jobId }
-    ).then((res) => commit("addEvent", res.data.createEvent.event));
+    )
+      .then((res) => commit("addEvent", res.data.createEvent.event))
+      .finally(() => commit("setLoadingEvents", false, { root: true }));
   },
   deleteEvent({ commit }, eventId) {
-    return doDelete("event", eventId).then(() =>
-      commit("removeEvent", eventId)
-    );
+    commit("setLoadingEvents", true, { root: true });
+    return doDelete("event", eventId)
+      .then(() => commit("removeEvent", eventId))
+      .finally(() => commit("setLoadingEvents", false, { root: true }));
   },
   editEvent({ commit }, { id, eventData }) {
-    return doEditFromObject("event", id, eventData).then((res) =>
-      commit("updateEvent", res.data.editEvent.event)
-    );
+    commit("setLoadingEvents", true, { root: true });
+    return doEditFromObject("event", id, eventData)
+      .then((res) => commit("updateEvent", res.data.editEvent.event))
+      .finally(() => commit("setLoadingEvents", false, { root: true }));
   },
-  getCVItems({ commit }, jobId) {
-    return doQuery(`cv(id: "${jobId}") {
-      address, education, skills, workHistory, projects
-    }`).then((res) => commit("setCV", res.data.cv));
+  getCV({ commit }, jobId) {
+    commit("setLoadingCV", true, { root: true });
+    return doQuery(`
+      cv(id: "${jobId}") { address, education, skills, workHistory, projects },
+      cvHtml(id: "${jobId}")
+    `)
+      .then((res) => {
+        commit("setCv", res.data.cv);
+        commit("setCvHtml", res.data.cvHtml);
+      })
+      .finally(() => commit("setLoadingCV", false, { root: true }));
   },
-  getCVHTML({ commit }, jobId) {
-    return doQuery(`cvHtml(id: "${jobId}")`).then((res) =>
-      commit("setCVHTML", res.data.cvHtml)
-    );
-  },
-  selectCVItems({ commit }, { jobId, addIds, removeIds }) {
+  updateCV({ commit }, { jobId, addIds, removeIds }) {
+    commit("setLoadingCV", true, { root: true });
     return executeString(
-      `mutation SelectCvItems($jobId: ID!, $addIds: [ID]!, $removeIds: [ID]!) {
-        selectCvItems(jobId: $jobId, addIds: $addIds, removeIds: $removeIds) {
-          cv { address, education, skills, workHistory, projects }
+      `mutation UpdateCv($jobId: ID!, $addIds: [ID]!, $removeIds: [ID]!) {
+        updateCv(jobId: $jobId, addIds: $addIds, removeIds: $removeIds) {
+          cv { address, education, skills, workHistory, projects },
+          cvHtml
         }
     }`,
       { jobId, addIds, removeIds }
-    ).then((res) => commit("setCV", res.data.selectCvItems.cv));
+    )
+      .then((res) => {
+        commit("setCv", res.data.updateCv.cv);
+        commit("setCvHtml", res.data.updateCv.cvHtml);
+      })
+      .finally(() => commit("setLoadingCV", false, { root: true }));
+  },
+
+  getCoverLetter({ commit }, jobId) {
+    commit("setLoadingCoverLetter", true, { root: true });
+    return doQuery(`
+      coverLetter(id: "${jobId}") {
+        recipientName, lineOne, lineTwo, lineThree, city,
+        date, subjectLine, openingSalutation, coverLetterBody,
+        closingSalutation
+      },
+      coverLetterHtml(id: "${jobId}")
+    `)
+      .then((res) => {
+        commit("setCoverLetter", res.data.coverLetter);
+        commit("setCoverLetterHtml", res.data.coverLetterHtml);
+      })
+      .finally(() => commit("setLoadingCoverLetter", false, { root: true }));
+  },
+
+  updateCoverLetter({ commit }, { jobId, coverLetterData }) {
+    commit("setLoadingCoverLetter", true, { root: true });
+    return executeString(
+      `mutation UpdateCoverLetter($jobId: ID!, $coverLetterData: CoverLetterInput!) {
+        updateCoverLetter(jobId: $jobId, coverLetterData: $coverLetterData) {
+          coverLetter {
+            recipientName, lineOne, lineTwo, lineThree, city,
+            date, subjectLine, openingSalutation, coverLetterBody,
+            closingSalutation
+          },
+          coverLetterHtml
+        }
+    }`,
+      { jobId, coverLetterData }
+    )
+      .then((res) => {
+        commit("setCoverLetter", res.data.updateCoverLetter.coverLetter);
+        commit("setCoverLetterHtml", res.data.updateCoverLetter.coverLetterHtml);
+      })
+      .finally(() => commit("setLoadingCoverLetter", false, { root: true }));
   },
 };
 
 const mutations = {
   updateJob: (state, job) => (state.details = { ...state.details, ...job }),
-  setCV: (state, cv) => (state.cv = cv),
-  setCVHTML: (state, cvHtml) => (state.cvHtml = cvHtml),
+  setCv: (state, cv) => (state.cv = cv),
+  setCvHtml: (state, cvHtml) => (state.cvHtml = cvHtml),
+  setCoverLetter: (state, coverLetter) =>
+    (state.coverLetter = { ...state.coverLetter, ...coverLetter }),
+  setCoverLetterHtml: (state, coverLetterHtml) =>
+    (state.coverLetterHtml = coverLetterHtml),
   addEvent: (state, event) => state.details.events.push(event),
   removeEvent: (state, eventID) =>
     (state.details.events = state.details.events.filter(

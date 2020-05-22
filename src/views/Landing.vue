@@ -1,5 +1,6 @@
 <template>
   <main>
+    <Bouncer bounceAuthorized bounceTo="jobs" />
     <header class="page-header page-header-dark">
       <div class="page-header-content mb-n5">
         <div class="container">
@@ -45,15 +46,17 @@
           </div>
           <div class="col-lg-4 mb-5 mb-lg-0">
             <h4>Apply to Jobs</h4>
-            <p
-              class="mb-0"
-            >Keep track of job openings you are interested in by adding them to the Jobs sections. Store information like job title, company, location and a detailed job description.</p>
+            <p class="mb-0">
+              Keep track of job openings you are interested in by adding them to the Jobs section.
+              Store information like job title, company, location and a detailed job description.
+            </p>
           </div>
           <div class="col-lg-4 mb-5 mb-lg-0">
             <h4>Track Status</h4>
-            <p
-              class="mb-0"
-            >Monitor the status of each of your applications. Organize your calendar by keeping track of interview scheduling and assessment deadlines. Get summary statistics like total number of applications submitted.</p>
+            <p class="mb-0">
+              Monitor the status of each of your applications.
+              Organize your calendar by keeping track of scheduled interviews and assessment deadlines.
+            </p>
           </div>
         </div>
       </div>
@@ -62,8 +65,13 @@
 </template>
 
 <script>
+import Bouncer from "@/components/Bouncer";
+
 export default {
   name: "Landing",
+  components: {
+    Bouncer
+  }
 };
 </script>
 

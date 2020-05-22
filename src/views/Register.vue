@@ -1,6 +1,7 @@
 <template>
-  <div>
-    <div class="col-md-6 m-auto">
+  <div class="container">
+    <Bouncer bounceAuthorized bounceTo="jobs" />
+    <div class="col-sm-7 m-auto">
       <div class="card card-body mt-5">
         <h2 class="text-center">Register</h2>
         <form @submit.prevent="pressRegister">
@@ -49,9 +50,13 @@
 
 <script>
 import { mapActions } from "vuex";
+import Bouncer from "@/components/Bouncer";
 
 export default {
   name: "Register",
+  components: {
+    Bouncer,
+  },
   data() {
     return {
       username: "",

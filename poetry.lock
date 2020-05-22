@@ -295,6 +295,14 @@ lingua = ["lingua"]
 
 [[package]]
 category = "main"
+description = "A fast and complete Python implementation of Markdown"
+name = "markdown2"
+optional = false
+python-versions = "*"
+version = "2.3.9"
+
+[[package]]
+category = "main"
 description = "Safely add untrusted strings to HTML/XML markup."
 name = "markupsafe"
 optional = false
@@ -471,7 +479,7 @@ python-versions = "*"
 version = "1.11.2"
 
 [metadata]
-content-hash = "8a2d612a3c79ff8eb484d1c0de24a7f560b341ab4e2af7a25596ce47c016ea3e"
+content-hash = "6d054fdf668403c0d6212b080691e045b3dc1824f391535b6a7b3d514c94fe62"
 python-versions = "^3.8"
 
 [metadata.files]
@@ -580,6 +588,10 @@ lazy-object-proxy = [
 mako = [
     {file = "Mako-1.1.2-py2.py3-none-any.whl", hash = "sha256:8e8b53c71c7e59f3de716b6832c4e401d903af574f6962edbbbf6ecc2a5fe6c9"},
     {file = "Mako-1.1.2.tar.gz", hash = "sha256:3139c5d64aa5d175dbafb95027057128b5fbd05a40c53999f3905ceb53366d9d"},
+]
+markdown2 = [
+    {file = "markdown2-2.3.9-py2.py3-none-any.whl", hash = "sha256:e6b401ec80b75e76a6b3dbb2c8ade513156fa55fa6c30b9640a1abf6184a07c8"},
+    {file = "markdown2-2.3.9.tar.gz", hash = "sha256:89526090907ae5ece66d783c434b35c29ee500c1986309e306ce2346273ada6a"},
 ]
 markupsafe = [
     {file = "MarkupSafe-1.1.1-cp27-cp27m-macosx_10_6_intel.whl", hash = "sha256:09027a7803a62ca78792ad89403b1b7a73a01c8cb65909cd876f7fcebd79b161"},

@@ -18,6 +18,8 @@
 </template>
 
 <script>
+import { mapActions } from "vuex";
+
 import Header from "./components/layout/Header";
 import Footer from "./components/layout/Footer";
 import Notification from "./components/layout/Notification";
@@ -44,13 +46,21 @@ export default {
     AddEditPersonalProjectModal,
     AddEditSkillModal,
     AddEditWorkExperienceModal,
-    DeleteModal,
+    DeleteModal
   },
+  methods: {
+    ...mapActions(["loadUser"])
+  },
+  created() {
+    this.loadUser().catch(err => err);
+  }
 };
 </script>
 
 
 <style lang="scss">
+@import "./cv_and_cover.scss";
+
 html {
   position: relative;
   min-height: 100%;
@@ -58,5 +68,14 @@ html {
 
 body {
   margin-bottom: 80px;
+}
+
+.card {
+  margin-bottom: 0.6rem;
+}
+
+h2,
+.card-header {
+  user-select: none;
 }
 </style>

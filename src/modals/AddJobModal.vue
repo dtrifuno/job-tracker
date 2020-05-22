@@ -60,7 +60,7 @@
 </template>
 
 <script>
-import { mapActions, mapMutations, mapState } from "vuex";
+import { mapActions, mapState } from "vuex";
 
 import modalProps from "./modalProps";
 
@@ -83,7 +83,6 @@ export default {
   },
   methods: {
     ...mapActions(["createJob", "flashSuccess"]),
-    ...mapMutations(["toggleLoadingJobs"]),
     extractDataToObject() {
       const data = {
         position: this.position,
@@ -113,13 +112,11 @@ export default {
       this.clearFields();
     },
     onClickSubmit() {
-      this.toggleLoadingJobs();
       this.createJob({
         date: new Date().toISOString().split("T")[0],
         jobData: this.extractDataToObject()
       })
         .then(() => this.closeModal())
-        .finally(this.toggleLoadingJobs);
     },
     closeModal() {
       this.$modal.hide("AddJobModal");

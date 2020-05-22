@@ -6,7 +6,7 @@
         <button
           v-if="!isEdit & !isLoading"
           class="btn btn-outline-primary btn-sm mx-2"
-          @click="$router.push({ name:'print-cv', params: { cvHtml } })"
+          @click="$router.push({ name:'print-page', params: { id: jobId, html: cvHtml } })"
         >Print</button>
         <button
           class="btn btn-outline-primary btn-sm"
@@ -17,7 +17,9 @@
     </div>
     <div class="card-body">
       <Spinner v-if="isLoading" />
-      <div v-else-if="!isEdit" v-html="cvHtml"></div>
+      <div class="p-2" v-else-if="!isEdit">
+        <div v-html="cvHtml"></div>
+      </div>
       <div v-else>
         <div>
           <small
@@ -187,7 +189,7 @@
 </template>
 
 <script>
-import { mapState, mapActions, mapMutations, mapGetters } from "vuex";
+import { mapState, mapActions, mapGetters } from "vuex";
 
 import { toMonthYearString, addressToString } from "@/utils";
 import Spinner from "@/components/Spinner";
@@ -197,6 +199,7 @@ export default {
   components: {
     Spinner
   },
+  props: ["jobId"],
   data() {
     return {
       isEdit: false,
@@ -209,29 +212,22 @@ export default {
   },
   computed: {
     ...mapState({
-        isLoading: state => state.spinners.job.isLoadingCV,
-        jobId: state => state.jobDetails.details.id,
-        profile: state => state.profile,
-        cv: state => state.jobDetails.cv,
-        cvHtml: state => state.jobDetails.cvHtml
+      isLoading: state => state.spinners.job.isLoadingCV,
+      profile: state => state.profile,
+      cv: state => state.jobDetails.cv,
+      cvHtml: state => state.jobDetails.cvHtml
     }),
     ...mapGetters(["sortedEducation", "sortedWorkHistory", "groupedSkills"])
+  },
+  created() {
+    this.getCV(this.jobId).then(() => {
+      this.setDataFromObject(this.cv);
+    });
   },
   methods: {
     addressToString,
     toMonthYearString,
-    ...mapActions(["getCVItems", "getCVHTML", "selectCVItems"]),
-    ...mapMutations(["toggleLoadingCV"]),
-    extractDataFromState() {
-      const data = {
-        address: this.cv.address,
-        education: [...this.cv.education],
-        skills: [...this.cv.skills],
-        workHistory: [...this.cv.workHistory],
-        projects: [...this.cv.projects]
-      };
-      return data;
-    },
+    ...mapActions(["getCV", "updateCV"]),
     setDataFromObject(data) {
       for (const [field, value] of Object.entries(data)) {
         this[field] = value;
@@ -274,23 +270,13 @@ export default {
       return { addIds, removeIds };
     },
     onClick() {
-      if (!this.isEdit) {
-        this.toggleLoadingCV();
-        this.getCVItems(this.jobId)
-          .then(() => {
-            this.setDataFromObject(this.extractDataFromState());
-            this.isEdit = true;
-          })
-          .finally(this.toggleLoadingCV);
-      } else {
-        this.toggleLoadingCV();
+      if (this.isEdit) {
         const { addIds, removeIds } = this.getDiffCV();
-        this.selectCVItems({ addIds, removeIds, jobId: this.jobId })
-          .then(() => this.getCVHTML(this.jobId))
-          .then(() => {
-            this.isEdit = false;
-          })
-          .finally(this.toggleLoadingCV);
+        this.updateCV({ addIds, removeIds, jobId: this.jobId }).then(
+          () => (this.isEdit = false)
+        );
+      } else {
+        this.isEdit = true;
       }
     }
   }

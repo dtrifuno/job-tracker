@@ -16,22 +16,22 @@
           <Spinner v-if="spinners.isLoadingBiographical" />
           <div v-else>
             <div class="row form-group">
-              <div class="col">
+              <div class="col-sm-5">
                 <label for="firstNameInput">First Name</label>
                 <input type="text" class="form-control" id="firstNameInput" v-model="firstName" />
               </div>
-              <div class="col">
+              <div class="col-sm-7">
                 <label for="lastNameInput">Last Name</label>
                 <input type="text" class="form-control" id="lastNameInput" v-model="lastName" />
               </div>
             </div>
 
             <div class="row form-group">
-              <div class="col">
+              <div class="col-sm-7">
                 <label for="emailInput">Email</label>
                 <input type="email" class="form-control" id="emailInput" v-model="email" />
               </div>
-              <div class="col">
+              <div class="col-sm-5">
                 <label for="phoneNumberInput">Phone Number</label>
                 <input type="tel" class="form-control" id="phoneNumberInput" v-model="phoneNumber" />
               </div>
@@ -160,7 +160,7 @@
 </template>
 
 <script>
-import { mapState, mapActions, mapGetters, mapMutations } from "vuex";
+import { mapState, mapActions, mapGetters } from "vuex";
 
 import { toMonthYearString, addressToString } from "@/utils.js";
 
@@ -193,16 +193,14 @@ export default {
       biographicalData: state => state.profile.biographicalData,
       addresses: state => state.profile.addresses,
       projects: state => state.profile.projects,
-      spinners: state => state.spinners.profile
+      spinners: state => state.spinners.profile,
     }),
     ...mapGetters(["sortedEducation", "sortedWorkHistory", "groupedSkills"])
   },
   created() {
     if (!this.spinners.isProfileLoaded) {
-      this.setProfileLoading();
       this.getProfile()
         .then(this.extractBiographicalDataFromState)
-        .then(this.setProfileLoaded);
     } else {
       this.extractBiographicalDataFromState();
     }
@@ -218,11 +216,6 @@ export default {
       "deleteWorkExperience",
       "deletePersonalProject",
       "flashSuccess"
-    ]),
-    ...mapMutations([
-      "setProfileLoading",
-      "setProfileLoaded",
-      "toggleLoadingBiographical"
     ]),
     extractBiographicalDataToObject() {
       return {
@@ -247,16 +240,14 @@ export default {
     extractBiographicalDataFromState() {
       this.setDataToObject(this.biographicalData);
     },
-    async onSubmit() {
+    onSubmit() {
       const oldBiographicalData = { ...this.biographicalData };
-      this.toggleLoadingBiographical();
       this.editBiographicalData(this.extractBiographicalDataToObject())
         .then(() => {
           this.extractBiographicalDataFromState();
           this.flashSuccess("Changes successfully saved.");
         })
         .catch(() => this.setDataToObject(oldBiographicalData))
-        .finally(this.toggleLoadingBiographical);
     },
 
     // Modals
@@ -304,16 +295,7 @@ export default {
 };
 </script>
 
-<style>
-.card {
-  margin-bottom: 0.6rem;
-}
-
-h2,
-.card-header {
-  user-select: none;
-}
-
+<style scoped>
 .address-item {
   cursor: pointer;
   transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out,

@@ -1,6 +1,6 @@
 # JobTracker
 
-JobTracker is a web application that helps users prepare customized job application materials and keep track of application statuses, deadlines, descriptions and details for all positions the user has applied for during their job search.
+JobTracker is a web application that helps users create customized CVs and keep track of job application statuses, deadlines, descriptions and details for all positions that the user has applied for during their job search.
 
 Go to [trifunovski.me/job-tracker](https://trifunovski/me/job-tracker) to try it out!
 
@@ -8,9 +8,19 @@ Go to [trifunovski.me/job-tracker](https://trifunovski/me/job-tracker) to try it
 
 ## Built With
 
-The backend is written in Python using the [Flask](https://flask.palletsprojects.com/) web microframework. It uses the [SQLAlchemy](https://www.sqlalchemy.org/) ORM and [Graphene](https://graphene-python.org/) to implement a GraphQL endpoint.
+### Backend (Python)
 
-The frontend is a [Vue.js](https://vuejs.org/) application written in JavaScript, using [Vuex](https://vuex.vuejs.org/) for state management, [Apollo Link](https://www.apollographql.com/docs/link/) as a low-level GraphQL client and the [Bootstrap](https://getbootstrap.com/) CSS framework with the [Lux](https://bootswatch.com/lux/) color theme for styling.
+* [Flask web microframework](https://flask.palletsprojects.com/)
+* [SQLAlchemy ORM](https://www.sqlalchemy.org/) 
+* [Graphene](https://graphene-python.org/) 
+
+### Frontend (HTML/CSS/JavaScript)
+
+* [Vue.js](https://vuejs.org/) (with [Vuex state management library](https://vuex.vuejs.org/) and [vue-router](https://router.vuejs.org/))
+* [Bootstrap](https://getbootstrap.com/) (with the [Bootswatch Lux](https://bootswatch.com/lux/) color theme for styling)
+* [Apollo Link](https://www.apollographql.com/docs/link/)
+* [vue-notification](https://github.com/euvl/vue-notification)
+* [vue-js-modal](https://github.com/euvl/vue-js-modal)
 
 ## Installation
 
@@ -39,7 +49,7 @@ $ poetry run dev
 ```
 to start the Flask server in development mode, and
 ```
-$ npm run dev
+$ npm run serve
 ```
 to start a client dev server.
 
@@ -49,13 +59,17 @@ By default, the job-tracker's Flask development server will run CORS only on `lo
 
 ## TODO
 * **Stats Dashboard**
-Create a dashboard where users can keep track of the total number of applications submitted/rejected/waiting response/etc. and can set a goal for the number of applications they want to submit per month or week.
+Create a dashboard where users can keep track of the total number of applications submitted/rejected/waiting response/etc. and can set a goal for the number of submissions they want to make per month/week.
 * **Calendar**
 Create a page where the user can see all of their scheduled assessments, interviews and other upcoming deadlines. Integrate this functionality with Google Calendar.
+* **Custom CV Sections**
+The application is currently very opinionated about which sections to include in the CV (Education, Skills, Work History, ...) and in which order. Allow users to create custom sections and order them at will.
+* **CV Themes**
+Let users choose from a variety of CV stylings.
+* **Authorization**
+Job-tracker currently uses only basic JWT access tokens. Implement refresh tokens and server-side token invalidation after logout.
 * **Testing**
 Write unit and functional tests.
-* **Authorization**
-Job-tracker currently uses only basic JWT access tokens. Implement refresh tokens and blacklisting tokens after logout.
 * **Containerize**
 Package the application as a Docker container.
 

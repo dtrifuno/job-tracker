@@ -46,7 +46,7 @@
 </template>
 
 <script>
-import { mapActions, mapMutations, mapState } from "vuex";
+import { mapActions, mapState } from "vuex";
 
 import modalProps from "./modalProps";
 
@@ -68,7 +68,6 @@ export default {
   },
   methods: {
     ...mapActions(["createSkill", "editSkill", "deleteSkill", "flashSuccess"]),
-    ...mapMutations(["toggleLoadingSkills"]),
     extractDataToObject() {
       const data = {
         category: this.category,
@@ -100,7 +99,6 @@ export default {
       }
     },
     onClickSubmit() {
-      this.toggleLoadingSkills();
       this.createSkill({
         skillData: this.extractDataToObject()
       })
@@ -109,10 +107,8 @@ export default {
           this.flashSuccess("Skill successfully added.");
         })
         .catch(err => err)
-        .finally(this.toggleLoadingSkills);
     },
     onClickEdit() {
-      this.toggleLoadingSkills();
       this.editSkill({
         id: this.id,
         skillData: this.extractDataToObject()
@@ -122,17 +118,14 @@ export default {
           this.flashSuccess("Changes successfully saved.");
         })
         .catch(err => err)
-        .finally(this.toggleLoadingSkills);
     },
     onClickDelete() {
-      this.toggleLoadingSkills();
       this.deleteSkill(this.id)
         .then(() => {
           this.closeModal();
           this.flashSuccess("Skill successfully deleted.");
         })
         .catch(err => err)
-        .finally(this.toggleLoadingSkills);
     },
     closeModal() {
       this.$modal.hide("AddEditSkillModal");

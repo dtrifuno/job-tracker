@@ -21,6 +21,38 @@ export const toMonthYearString = (dateValue) => {
   return `${numToAbbreviatedMonth[monthValue]} ${yearValue}`;
 };
 
+export const compareNumbers = (a, b) => a - b;
+
+export const compareStatusCodes = (statusCodeA, statusCodeB) => {
+  const orderedStatusCodes = [
+    "JobAdded",
+    "Note",
+    "ApplicationSubmitted",
+    "ScreeningScheduled",
+    "ScreeningCompleted",
+    "AssessmentScheduled",
+    "AssessmentCompleted",
+    "InterviewScheduled",
+    "InterviewCompleted",
+    "Rejected",
+    "OfferMade",
+    "OfferAccepted",
+    "OfferRejected",
+  ];
+
+  if (statusCodeA === statusCodeB) {
+    return 0;
+  }
+
+  for (const statusCode of orderedStatusCodes) {
+    if (statusCode === statusCodeA) {
+      return -1;
+    } else if (statusCode === statusCodeB) {
+      return 1;
+    }
+  }
+};
+
 export const statusCodeToMsg = (statusCode) => {
   const statusCodeToMsgDict = {
     JobAdded: "Job Added",
