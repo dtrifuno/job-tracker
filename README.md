@@ -4,7 +4,7 @@ JobTracker is a web application that helps users create customized CVs and keep 
 
 Go to [trifunovski.me/job-tracker](https://trifunovski/me/job-tracker) to try it out!
 
-![JobTracker](https://raw.githubusercontent.com/dtrifuno/)
+![JobTracker](https://github.com/dtrifuno/job-tracker/blob/master/src/assets/job-tracker.png?raw=true)
 
 ## Built With
 
