@@ -44,7 +44,7 @@ class Job(db.Model):
     position = db.Column(db.String(50), nullable=False)
     location = db.Column(db.String(50), nullable=False)
     url = db.Column(db.String(400), default="")
-    description = db.Column(db.Text(15000), default="")
+    description = db.Column(db.Text(), default="")
 
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     user = db.relationship('User', backref=db.backref("jobs", lazy=True))
@@ -67,7 +67,7 @@ class Job(db.Model):
     date = db.Column(db.String(10))
     subject_line = db.Column(db.String(50))
     opening_salutation = db.Column(db.String(100))
-    cover_letter_body = db.Column(db.Text(10000), default="")
+    cover_letter_body = db.Column(db.Text(), default="")
     closing_salutation = db.Column(db.String(100))
 
 

@@ -102,7 +102,7 @@ class Education(db.Model):
     date_from = db.Column(db.String(7), nullable=False)
     date_to = db.Column(db.String(7))
     gpa = db.Column(db.String(20))
-    description = db.Column(db.Text(1000))
+    description = db.Column(db.Text())
 
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     user = db.relationship('User', backref=db.backref("education", lazy=True))
@@ -152,7 +152,7 @@ class WorkExperience(db.Model):
     position = db.Column(db.String(50))
     date_from = db.Column(db.String(7), nullable=False)
     date_to = db.Column(db.String(7))
-    description = db.Column(db.Text(1000))
+    description = db.Column(db.Text())
 
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     user = db.relationship(

@@ -6,7 +6,7 @@
         <button
           v-if="!isEdit & !isLoading"
           class="btn btn-outline-primary btn-sm mx-2"
-          @click="$router.push({ name:'print-page', params: { id: jobId, html: cvHtml } })"
+          @click="$router.push({ name: 'print-page', params: { id: jobId, html: cvHtml } })"
         >Print</button>
         <button
           class="btn btn-outline-primary btn-sm"

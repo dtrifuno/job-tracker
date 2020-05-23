@@ -25,6 +25,7 @@ instance/*
 !instance/.gitignore
 .webassets-cache
 .env
+migrations/
 *.sqlite
 
 ### Flask.Python Stack ###

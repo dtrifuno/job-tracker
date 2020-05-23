@@ -40,6 +40,14 @@ $ poetry install
 $ npm install
 ```
 
+- Create a migrations folder, generate the initial migration and apply the migration to the database.
+
+```
+$ poetry run flask db init
+$ poetry run flask db migrate
+$ poetry run flask db upgrade
+```
+
 ## Usage
 
 ### Development
@@ -57,13 +65,29 @@ By default, the job-tracker's Flask development server will run CORS only on `lo
 
 ### Deployment
 
+Clone the project and then run
+```
+$ poetry install
+$ poetry add gunicorn psycopg2
+```
+to install the [Gunicorn WSGI Server](https://gunicorn.org/) and the [Psycopg PostgreSQL database adapter](https://pypi.org/project/psycopg2/). Create a file caled `.env` in the root project directory containing
+```
+SECRET_KEY = "${some_secret_key}"
+JWT_SECRET_KEY = "${some_secret_key}"
+DATABASE_URI = "postgres://${db_username}:${db_password}@${db_hostname}:${db_port}/${db_name}"
+```
+
+and then create and apply the database migrations following the instructions in the Installation section.
+
+
+
 ## TODO
 * **Stats Dashboard**
 Create a dashboard where users can keep track of the total number of applications submitted/rejected/waiting response/etc. and can set a goal for the number of submissions they want to make per month/week.
 * **Calendar**
 Create a page where the user can see all of their scheduled assessments, interviews and other upcoming deadlines. Integrate this functionality with Google Calendar.
 * **Custom CV Sections**
-The application is currently very opinionated about which sections to include in the CV (Education, Skills, Work History, ...) and in which order. Allow users to create custom sections and order them at will.
+The app is currently very opinionated about which sections to include in the CV (Education, Skills, Work History, ...) and in which order. Allow users to create custom sections and order them at will.
 * **CV Themes**
 Let users choose from a variety of CV stylings.
 * **Authorization**
@@ -74,5 +98,4 @@ Write unit and functional tests.
 Package the application as a Docker container.
 
 ## License
-
 [MIT](https://choosealicense.com/licenses/mit/)

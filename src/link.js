@@ -5,7 +5,12 @@ import gql from "graphql-tag";
 
 import store from "./store";
 
-const httpLink = createHttpLink({ uri: "http://localhost:5000/graphql" });
+const httpLink = createHttpLink({
+  uri:
+    process.env.NODE_ENV === "production"
+      ? "/jobtracker/graphql"
+      : "http://localhost:5000/graphql",
+});
 
 const authMiddleware = new ApolloLink((operation, forward) => {
   operation.setContext(({ headers = {} }) => ({
@@ -20,14 +25,14 @@ const authMiddleware = new ApolloLink((operation, forward) => {
 
 const logoutLink = onError(({ graphQLErrors }) => {
   if (graphQLErrors) {
-    graphQLErrors.forEach(error => {
+    graphQLErrors.forEach((error) => {
       if (error.message.includes("Authorization failure")) {
-        store.dispatch("flashError", "Invalid token. Please log in again.")
+        store.dispatch("flashError", "Invalid token. Please log in again.");
         store.dispatch("logout");
       } else {
-        store.dispatch("flashError", error.message)
+        store.dispatch("flashError", error.message);
       }
-    })
+    });
   }
 });
 
@@ -103,7 +108,8 @@ export const doDelete = (objectName, id) => {
   return executeString(
     `mutation {
       delete${capitalizedName}(id: "${id}") { ok }
-    }`)
+    }`
+  );
 };
 
 export default doQuery;
