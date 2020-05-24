@@ -160,3 +160,5 @@ sketch
 .history
 
 # End of https://www.gitignore.io/api/vue,flask,visualstudiocode
+
+*.sock
